@@ -33,30 +33,23 @@ namespace misaxx::module::kidney_glomeruli_detection {
 
         void init() {
 
-            // Autofluorescence contained directly in folder
-            init_data(m_input_autofluorescence) << filesystem.imported;
-            init_data(m_output_quantification) << filesystem.exported / filesystem::as<filesystem::file >("quantified.json");
-
-            // Init submodule
-            init_data(m_tissue_detection); // TODO: How to init?
-
-            // Init dependent data
-            init_data(m_output_segmented2d) << m_input_autofluorescence;
-            init_data(m_output_segmented3d) << m_output_segmented2d;
-
-            if(module().m_input_autofluorescence.files.empty())
+            if(module().m_input_autofluorescence->files.empty())
                 return;
 
-            misa_dispatch(m_tissue_detection);
+            group preprocessing;
+            preprocessing << misa_dispatch(m_tissue_detection);
 
-//            group segmentation2d;
-//            for(auto &kv : module().m_input_autofluorescence) {
-//                std::cout << kv.first << std::endl;
-//                auto &worker = dispatch_segmentation2d();
-//                worker.m_input_autofluoresence = kv.second;
-//                worker.m_output_segmented2d = module().m_output_segmented2d.files.at(kv.first);
-//                segmentation2d << worker;
-//            }
+            group segmentation2d({{ preprocessing }});
+
+            for(auto &kv : *module().m_input_autofluorescence) {
+                auto &worker = dispatch_segmentation2d();
+                worker.m_input_autofluoresence = kv.second;
+                worker.m_input_tissue = module().m_tissue_detection.instance().m_output_segmented3d->at(kv.first);
+                worker.m_output_segmented2d = module().m_output_segmented2d->at(kv.first);
+                segmentation2d << worker;
+
+                std::cout << "test" << std::endl;
+            }
 
 //            auto &segmentation3d = misa_dispatch<segmentation3d::no_segmentation3d>("segmentation3d");
 //            segmentation3d.m_input_segmented2d = m_output_segmented2d;

@@ -62,7 +62,7 @@ namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
             //////////////
 
             // Threshold the main image
-            uchar otsu_threshold;
+            uchar otsu_threshold = 0;
             images::grayscale8u img_as8u = semantic_convert<images::mask>(img) << binarize::otsu(otsu_threshold);
             if((otsu_threshold / 255.0) > percentile_tissue * m_threshold_factor ) {
 
