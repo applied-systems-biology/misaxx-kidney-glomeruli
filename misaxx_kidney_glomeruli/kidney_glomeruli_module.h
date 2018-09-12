@@ -6,8 +6,9 @@
 #pragma once
 
 #include <misaxx/misa_module.h>
-#include <misaxx_kidney_glomeruli/segmentation2d/klingberg.h>
+#include "segmentation2d/klingberg.h"
 #include "segmentation2d/segmentation2d_base.h"
+#include "segmentation3d/klingberg.h"
 #include "kidney_glomeruli.h"
 
 namespace misaxx::module::kidney_glomeruli_detection {
@@ -49,6 +50,14 @@ namespace misaxx::module::kidney_glomeruli_detection {
                 segmentation2d << worker;
 
                 std::cout << "test" << std::endl;
+            }
+
+            group segmentation3d({{ segmentation2d }});
+            {
+                auto &worker = misa_dispatch<segmentation3d::klingberg>("segmentation3d-klingberg");
+                worker.m_input_segmented2d = m_output_segmented2d;
+                worker.m_output_segmented3d = m_output_segmented3d;
+                segmentation3d << worker;
             }
 
 //            auto &segmentation3d = misa_dispatch<segmentation3d::no_segmentation3d>("segmentation3d");
