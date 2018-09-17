@@ -7,40 +7,42 @@
 
 #include <misaxx/parameters/voxel_size.h>
 #include <misaxx/metadata/misa_metadata.h>
+#include <misaxx/metadata/object3d_voxel_bounds.h>
 
 namespace misaxx::module::kidney_glomeruli_detection {
+
     struct glomerulus : public misa_metadata {
         /**
          * Number of pixels
          */
-        int pixels;
+        int pixels = 0;
         /**
          * Volume of the glomerulus
          */
-        double volume;
+        double volume = 0;
         /**
          * Diameter of the glomerulus
          */
-        double diameter;
+        double diameter = 0;
         /**
          * Bounding box of the glomerulus
          */
-        voxel_size bounds;
+        metadata::object3d_voxel_bounds bounds;
         /**
          * Label in the labeling output
          */
-        int label;
+        int label = 0;
         /**
          * True if the glomerulus is detected as valid during quantification
          */
-        bool valid;
+        bool valid = false;
 
         nlohmann::json to_json() const override {
             nlohmann::json j;
             j["pixels"] = pixels;
             j["volume"] = volume;
             j["diameter"] = diameter;
-            j["bounds"] = bounds;
+            j["bounds"] = bounds.to_json();
             j["label"] = label;
             j["valid"] = valid;
             return j;

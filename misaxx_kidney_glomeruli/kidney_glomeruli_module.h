@@ -6,6 +6,7 @@
 #pragma once
 
 #include <misaxx/misa_module.h>
+#include "quantification/constrained_klingberg.h"
 #include "quantification/klingberg.h"
 #include "segmentation2d/klingberg.h"
 #include "segmentation2d/local_otsu.h"
@@ -26,7 +27,7 @@ namespace misaxx::module::kidney_glomeruli_detection {
     };
 
     struct quantification_algorithms : public cxxh::types::options<std::string> {
-        static inline const values available_values = { "klingberg" };
+        static inline const values available_values = { "klingberg", "constrained_klingberg" };
         static inline const value default_value = "klingberg";
     };
 
@@ -105,6 +106,9 @@ namespace misaxx::module::kidney_glomeruli_detection {
         quantification::quantification_base &dispatch_quantification() {
             if(m_quantification_algorithm.get() == "klingberg") {
                 return misa_dispatch<quantification::klingberg>("quantification-klingberg");
+            }
+            else if(m_quantification_algorithm.get() == "constrained_klingberg") {
+                return misa_dispatch<quantification::constrained_klingberg>("quantification-constrained_klingberg");
             }
             else {
                 throw std::runtime_error("Unknown quantification algorithm");

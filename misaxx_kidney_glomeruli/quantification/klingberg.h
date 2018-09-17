@@ -35,18 +35,18 @@ namespace misaxx::module::kidney_glomeruli_detection::quantification {
                     glomerulus &glom = module().get_glomerulus(group);
                     glom.pixels += glom_properties.get<label_pixel_count>().pixels;
                 }
+            }
 
-                // Calculate the properties of the glomeruli
-                double glomerulus_min_volume = 4.0 / 3.0 * M_PI * pow(m_glomeruli_min_rad, 3);
-                double glomerulus_max_volume = 4.0 / 3.0 * M_PI * pow(m_glomeruli_max_rad, 3);
+            // Calculate the properties of the glomeruli
+            double glomerulus_min_volume = 4.0 / 3.0 * M_PI * pow(m_glomeruli_min_rad, 3);
+            double glomerulus_max_volume = 4.0 / 3.0 * M_PI * pow(m_glomeruli_max_rad, 3);
 
-                for(auto &kv : module().get_glomeruli().data) {
-                    glomerulus &glom = kv.second;
-                    glom.label = kv.first;
-                    glom.volume = glom.pixels * m_voxel_size.volume();
-                    glom.diameter = 2 * pow(3.0 / 4.0 * glom.volume / M_PI, 1.0 / 3.0);
-                    glom.valid = glom.volume >= glomerulus_min_volume && glom.volume <= glomerulus_max_volume;
-                }
+            for(auto &kv : module().get_glomeruli().data) {
+                glomerulus &glom = kv.second;
+                glom.label = kv.first;
+                glom.volume = glom.pixels * m_voxel_size.volume();
+                glom.diameter = 2 * pow(3.0 / 4.0 * glom.volume / M_PI, 1.0 / 3.0);
+                glom.valid = glom.volume >= glomerulus_min_volume && glom.volume <= glomerulus_max_volume;
             }
         }
     };
