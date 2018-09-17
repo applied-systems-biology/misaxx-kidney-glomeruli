@@ -1,0 +1,26 @@
+//
+// Created by rgerst on 17.09.18.
+//
+
+
+#pragma once
+
+#include "glomerulus.h"
+
+namespace misaxx::module::kidney_glomeruli_detection {
+    struct glomeruli : public misa_metadata {
+        std::unordered_map<int, glomerulus> data;
+
+        nlohmann::json to_json() const override {
+            nlohmann::json j;
+            for(const auto &kv : data) {
+                j[std::to_string(kv.first)] = kv.second.to_json();
+            }
+            return j;
+        }
+
+        std::string get_name() const override {
+            return "glomeruli";
+        }
+    };
+}

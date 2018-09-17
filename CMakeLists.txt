@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_library(misaxx_kidney_glomeruli misaxx_kidney_glomeruli/kidney_glomeruli_module.h
-        misaxx_kidney_glomeruli/kidney_glomeruli.h misaxx_kidney_glomeruli/segmentation2d/segmentation2d_base.h misaxx_kidney_glomeruli/segmentation2d/klingberg.h misaxx_kidney_glomeruli/segmentation3d/klingberg.h misaxx_kidney_glomeruli/segmentation3d/segmentation3d_base.h)
+        misaxx_kidney_glomeruli/kidney_glomeruli.h misaxx_kidney_glomeruli/segmentation2d/segmentation2d_base.h misaxx_kidney_glomeruli/segmentation2d/klingberg.h misaxx_kidney_glomeruli/segmentation3d/klingberg.h misaxx_kidney_glomeruli/segmentation3d/segmentation3d_base.h misaxx_kidney_glomeruli/segmentation2d/local_otsu.h misaxx_kidney_glomeruli/quantification/quantification_base.h misaxx_kidney_glomeruli/quantification/klingberg.h misaxx_kidney_glomeruli/metadata/glomerulus.h misaxx_kidney_glomeruli/metadata/glomeruli.h)
         
 target_link_libraries(misaxx_kidney_glomeruli PUBLIC misaxx misaxx_tissue)
 target_include_directories(misaxx_kidney_glomeruli INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})

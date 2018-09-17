@@ -10,11 +10,13 @@
 #include <misaxx/module_data/misa_json_file.h>
 #include <misaxx/module_data/misa_exportable_meta_data.h>
 #include <misaxx_tissue/tissue_module.h>
+#include "metadata/glomeruli.h"
 
 using namespace coixx;
 
 namespace misaxx::module::kidney_glomeruli_detection {
     struct kidney_glomeruli : public misa_module_declaration {
+
         data<misa_image_stack<images::grayscale_float >> m_input_autofluorescence = declare_data<misa_image_stack<images::grayscale_float >>("autofluorescence");
         data<misa_image_stack<images::mask>> m_output_segmented2d = declare_data<misa_image_stack<images::mask>>("segmented2d");
         data<misa_image_stack<images::labels >> m_output_segmented3d = declare_data<misa_image_stack<images::labels>>("segmented3d");
@@ -32,6 +34,14 @@ namespace misaxx::module::kidney_glomeruli_detection {
             // Init dependent data
             m_output_segmented2d->from_reference_stack(m_input_autofluorescence);
             m_output_segmented3d->from_reference_stack(m_output_segmented2d);
+        }
+
+        glomeruli &get_glomeruli() {
+            return m_output_quantification->access<glomeruli>();
+        }
+
+        glomerulus &get_glomerulus(int label) {
+            return get_glomeruli().data[label];
         }
     };
 }
