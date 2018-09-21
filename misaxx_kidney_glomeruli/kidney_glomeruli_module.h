@@ -45,6 +45,14 @@ namespace misaxx::module::kidney_glomeruli_detection {
         segmentation3d_algorithm m_segmentation3d_algorithm = from_algorithm_json_or<segmentation3d_algorithm>("segmentation3d-algorithm", segmentation3d_algorithm());
         quantification_algorithm m_quantification_algorithm = from_algorithm_json_or<quantification_algorithm>("quantification-algorithm", quantification_algorithm());
 
+        dispatched<segmentation2d::klingberg> dispatch_segmentation2d_klingberg = future_dispatch<segmentation2d::klingberg>("segmentation2d-klingberg");
+        dispatched<segmentation2d::local_otsu> dispatch_segmentation2d_local_otsu = future_dispatch<segmentation2d::local_otsu>("segmentation2d-local_otsu");
+
+        dispatched<segmentation3d::klingberg> dispatch_segmentation3d_klingberg = future_dispatch<segmentation3d::klingberg>("segmentation2d-klingberg");
+
+        dispatched<quantification::klingberg> dispatch_quantification_klingberg = future_dispatch<quantification::klingberg>("quantification-klingberg");
+        dispatched<quantification::constrained_klingberg> dispatch_quantification_constrained_klingberg = future_dispatch<quantification::constrained_klingberg>("quantification-constrained_klingberg");
+
         void init() {
 
             if(module().m_input_autofluorescence->files.empty())
@@ -84,10 +92,10 @@ namespace misaxx::module::kidney_glomeruli_detection {
 
         segmentation2d::segmentation2d_base &dispatch_segmentation2d() {
             if(m_segmentation2d_algorithm.get() == "klingberg") {
-                return misa_dispatch<segmentation2d::klingberg>("segmentation2d-klingberg");
+                return misa_dispatch(dispatch_segmentation2d_klingberg);
             }
             else  if(m_segmentation2d_algorithm.get() == "local_otsu") {
-                return misa_dispatch<segmentation2d::local_otsu>("segmentation2d-local_otsu");
+                return misa_dispatch(dispatch_segmentation2d_local_otsu);
             }
             else {
                 throw std::runtime_error("Unknown 2D segmentation algorithm");
@@ -96,7 +104,7 @@ namespace misaxx::module::kidney_glomeruli_detection {
 
         segmentation3d::segmentation3d_base &dispatch_segmentation3d() {
             if(m_segmentation3d_algorithm.get() == "klingberg") {
-                return misa_dispatch<segmentation3d::klingberg>("segmentation3d-klingberg");
+                return misa_dispatch(dispatch_segmentation3d_klingberg);
             }
             else {
                 throw std::runtime_error("Unknown 3D segmentation algorithm");
@@ -105,10 +113,10 @@ namespace misaxx::module::kidney_glomeruli_detection {
 
         quantification::quantification_base &dispatch_quantification() {
             if(m_quantification_algorithm.get() == "klingberg") {
-                return misa_dispatch<quantification::klingberg>("quantification-klingberg");
+                return misa_dispatch(dispatch_quantification_klingberg);
             }
             else if(m_quantification_algorithm.get() == "constrained_klingberg") {
-                return misa_dispatch<quantification::constrained_klingberg>("quantification-constrained_klingberg");
+                return misa_dispatch(dispatch_quantification_constrained_klingberg);
             }
             else {
                 throw std::runtime_error("Unknown quantification algorithm");
