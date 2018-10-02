@@ -24,7 +24,7 @@ namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
 
         using segmentation2d_base::segmentation2d_base;
 
-        void work() {
+        void misa_work() override {
            using namespace coixx::toolbox;
 
             images::mask tissue_mask = m_input_tissue->load();

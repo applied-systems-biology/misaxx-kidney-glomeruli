@@ -20,7 +20,7 @@ namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
         double m_threshold_factor = from_algorithm_json_or<double>("threshold-factor", 1.5);
         object3d_voxel_size m_voxel_size = from_parameter<object3d_voxel_size>();
 
-        void work() {
+        void misa_work() override {
             using namespace coixx::toolbox;
 
             images::mask img_non_tissue_mask = m_input_tissue->load();

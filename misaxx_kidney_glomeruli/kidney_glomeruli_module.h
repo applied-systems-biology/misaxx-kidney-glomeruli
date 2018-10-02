@@ -37,7 +37,7 @@ namespace misaxx::module::kidney_glomeruli_detection {
                                                                                                 option<quantification::klingberg>("quantification-klingberg"),
                                                                                                 option<quantification::constrained_klingberg>("quantification-constrained_klingberg"));
 
-        void init() {
+        void misa_init() override {
 
             if (module().m_input_autofluorescence->files.empty())
                 return;

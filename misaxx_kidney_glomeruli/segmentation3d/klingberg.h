@@ -15,7 +15,7 @@ namespace misaxx::module::kidney_glomeruli_detection::segmentation3d {
 
         using segmentation3d_base::segmentation3d_base;
 
-        void work() {
+        void misa_work() override {
             using namespace coixx::toolbox;
             using recoloring_t = recoloring::recoloring_map<images::grayscale32s>;
 

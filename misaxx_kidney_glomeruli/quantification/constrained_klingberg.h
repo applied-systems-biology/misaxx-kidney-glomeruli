@@ -19,7 +19,7 @@ namespace misaxx::module::kidney_glomeruli_detection::quantification {
 
         using quantification_base::quantification_base;
 
-        void work() {
+        void misa_work() override {
             std::vector<std::string> sorted_layers;
             for(const auto &kv : *m_input_segmented3d) {
                 sorted_layers.push_back(kv.first);

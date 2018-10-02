@@ -18,7 +18,7 @@ namespace misaxx::module::kidney_glomeruli_detection::quantification {
 
         using quantification_base::quantification_base;
 
-        void work() {
+        void misa_work() override {
             for(const auto &layer : *m_input_segmented3d) {
 
                 std::cout << "Layer "<< layer.first << std::endl;
