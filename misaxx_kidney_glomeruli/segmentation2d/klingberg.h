@@ -6,7 +6,7 @@
 #pragma once
 
 #include "segmentation2d_base.h"
-#include <misaxx/parameters/voxel_size.h>
+#include <misaxx/metadata/object3d_voxel_size.h>
 
 namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
     struct klingberg : public segmentation2d_base {
@@ -18,7 +18,7 @@ namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
         double  m_glomeruli_max_rad = from_algorithm_json_or<double>("glomeruli-max-rad", 65);
         double m_threshold_percentile = from_algorithm_json_or<double>("threshold-percentile", 75);
         double m_threshold_factor = from_algorithm_json_or<double>("threshold-factor", 1.5);
-        voxel_size m_voxel_size = from_parameter<voxel_size>();
+        object3d_voxel_size m_voxel_size = from_parameter<object3d_voxel_size>();
 
         void work() {
             using namespace coixx::toolbox;

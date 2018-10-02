@@ -6,10 +6,10 @@
 #pragma once
 
 #include "segmentation2d_base.h"
-#include <misaxx/parameters/voxel_size.h>
 #include <coixx/toolbox/toolbox_blob.h>
 #include <coixx/toolbox/toolbox_localminmax.h>
 #include <coixx/toolbox/toolbox_binarize_componentotsu.h>
+#include <misaxx/metadata/object3d_voxel_size.h>
 
 namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
     struct local_otsu : public segmentation2d_base {
@@ -20,7 +20,7 @@ namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
         double m_cortex_segmentation_dilation_group_size = from_algorithm_json_or<double>("cortex-segmentation-dilation-group-size", 5);
         int m_voronoi_cell_radius_border = from_algorithm_json_or<int>("voronoi-cell-radius-border", 5);
         double m_isoperimetric_quotient_threshold = from_algorithm_json_or<double>("isoperimetric-quotient-threshold", 0.8);
-        voxel_size m_voxel_size = from_parameter<voxel_size>();
+        object3d_voxel_size m_voxel_size = from_parameter<object3d_voxel_size>();
 
         using segmentation2d_base::segmentation2d_base;
 

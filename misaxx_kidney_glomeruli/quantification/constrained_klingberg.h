@@ -8,13 +8,14 @@
 #include <coixx/objects/label_min_max_position.h>
 #include "quantification_base.h"
 #include "misaxx_kidney_glomeruli/metadata/glomerulus.h"
+#include <misaxx/metadata/object3d_voxel_size.h>
 
 namespace misaxx::module::kidney_glomeruli_detection::quantification {
     struct constrained_klingberg : public quantification_base {
 
         double  m_glomeruli_min_rad = from_algorithm_json_or<double>("glomeruli-min-rad", 15);
         double  m_glomeruli_max_rad = from_algorithm_json_or<double>("glomeruli-max-rad", 65);
-        voxel_size m_voxel_size = from_parameter<voxel_size>();
+        object3d_voxel_size m_voxel_size = from_parameter<object3d_voxel_size>();
 
         using quantification_base::quantification_base;
 

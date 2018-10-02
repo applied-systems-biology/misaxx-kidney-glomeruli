@@ -8,6 +8,7 @@
 #include "glomerulus.h"
 
 namespace misaxx::module::kidney_glomeruli_detection {
+
     struct glomeruli : public misa_metadata {
         std::unordered_map<int, glomerulus> data;
 
@@ -23,4 +24,14 @@ namespace misaxx::module::kidney_glomeruli_detection {
             return "glomeruli";
         }
     };
+
+    void to_json(nlohmann::json& j, const glomeruli& p) {
+        j = p.to_json();
+    }
+
+    void from_json(const nlohmann::json& j, glomeruli& p) {
+        for(auto it = j.begin(); it != j.end(); ++it) {
+            p.data[std::stoi(it.key())] = it.value();
+        }
+    }
 }

@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <misaxx/parameters/voxel_size.h>
 #include <misaxx/metadata/misa_metadata.h>
 #include <misaxx/metadata/object3d_voxel_bounds.h>
 
@@ -27,7 +26,7 @@ namespace misaxx::module::kidney_glomeruli_detection {
         /**
          * Bounding box of the glomerulus
          */
-        metadata::object3d_voxel_bounds bounds;
+        object3d_voxel_bounds bounds;
         /**
          * Label in the labeling output
          */
@@ -52,4 +51,17 @@ namespace misaxx::module::kidney_glomeruli_detection {
             return "glomerulus";
         }
     };
+
+    void to_json(nlohmann::json& j, const glomerulus& p) {
+        j = p.to_json();
+    }
+
+    void from_json(const nlohmann::json& j, glomerulus& p) {
+        p.pixels = j["pixels"];
+        p.volume = j["volume"];
+        p.diameter = j["diameter"];
+        p.bounds = j["bounds"];
+        p.label = j["label"];
+        p.valid = j["valid"];
+    }
 }
