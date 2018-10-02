@@ -1,3 +1,3 @@
-[submodule "cmake_modules"]
-	path = cmake_modules
-	url = https://asb-git.hki-jena.de/RGerst/cmake_modules.git
+[submodule "misaxx_cmake"]
+	path = misaxx_cmake
+	url = https://asb-git.hki-jena.de/RGerst/misaxx_cmake.git
