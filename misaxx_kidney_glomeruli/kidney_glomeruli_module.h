@@ -22,20 +22,25 @@ namespace misaxx::module::kidney_glomeruli_detection {
         dispatched <tissue_detection::tissue_detection_module> dispatch_tissue_detection = future_dispatch(m_tissue_detection);
 
         dispatched <segmentation2d::segmentation2d_base> dispatch_segmentation2d =
-                future_dispatch_any_from_algorithm_json_or<segmentation2d::segmentation2d_base>("segmentation2d",
-                                                                                                "segmentation2d-klingberg",
-                                                                                                option<segmentation2d::klingberg>("segmentation2d-klingberg"),
-                                                                                                option<segmentation2d::local_otsu>("segmentation2d-local_otsu"));
+                select_from_algorithm_json_or<segmentation2d::segmentation2d_base>("segmentation2d",
+                                                                                   "segmentation2d-klingberg", {
+                                                                                           future_dispatch<segmentation2d::klingberg>("segmentation2d-klingberg"),
+                                                                                           future_dispatch<segmentation2d::local_otsu>("segmentation2d-local_otsu")
+                                                                                   }
+                );
 
         dispatched <segmentation3d::segmentation3d_base> dispatch_segmentation3d =
-                future_dispatch_any_from_algorithm_json_or<segmentation3d::segmentation3d_base>("segmentation3d",
-                                                                                                "segmentation3d-klingberg",
-                                                                                                option<segmentation3d::klingberg>("segmentation3d-klingberg"));
+                select_from_algorithm_json_or<segmentation3d::segmentation3d_base>("segmentation3d",
+                                                                                   "segmentation3d-klingberg",
+                                                                                   {
+                                                                                           future_dispatch<segmentation3d::klingberg>("segmentation3d-klingberg")
+                                                                                   });
         dispatched <quantification::quantification_base> dispatch_quantification =
-                future_dispatch_any_from_algorithm_json_or<quantification::quantification_base>("quantification",
-                                                                                                "quantification-klingberg",
-                                                                                                option<quantification::klingberg>("quantification-klingberg"),
-                                                                                                option<quantification::constrained_klingberg>("quantification-constrained_klingberg"));
+                select_from_algorithm_json_or<quantification::quantification_base>("quantification",
+                                                                                   "quantification-klingberg", {
+                                                                                           future_dispatch<quantification::klingberg>("quantification-klingberg"),
+                                                                                           future_dispatch<quantification::constrained_klingberg>("quantification-constrained_klingberg")
+                                                                                   });
 
         void misa_init() override {
 
