@@ -6,9 +6,9 @@
 #pragma once
 
 #include <misaxx/misa_module_declaration.h>
-#include <misaxx/module_data/misa_image_stack.h>
-#include <misaxx/module_data/misa_json_file.h>
-#include <misaxx/module_data/misa_exportable_meta_data.h>
+#include <misaxx/pdata/misa_image_stack.h>
+#include <misaxx/pdata/misa_json_file.h>
+#include <misaxx/pdata/misa_exportable_meta_data.h>
 #include <misaxx_tissue/tissue_module.h>
 #include "metadata/glomeruli.h"
 

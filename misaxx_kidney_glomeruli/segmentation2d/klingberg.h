@@ -6,7 +6,7 @@
 #pragma once
 
 #include "segmentation2d_base.h"
-#include <misaxx/metadata/object3d_voxel_size.h>
+#include <misaxx/vdata/object3d_voxel_size.h>
 
 namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
     struct klingberg : public segmentation2d_base {

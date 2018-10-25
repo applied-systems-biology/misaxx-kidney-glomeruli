@@ -9,7 +9,7 @@
 #include <coixx/toolbox/toolbox_blob.h>
 #include <coixx/toolbox/toolbox_localminmax.h>
 #include <coixx/toolbox/toolbox_binarize_componentotsu.h>
-#include <misaxx/metadata/object3d_voxel_size.h>
+#include <misaxx/vdata/object3d_voxel_size.h>
 
 namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
     struct local_otsu : public segmentation2d_base {

@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <misaxx/metadata/misa_metadata.h>
-#include <misaxx/metadata/object3d_voxel_bounds.h>
+#include <misaxx/vdata/misa_metadata.h>
+#include <misaxx/vdata/object3d_voxel_bounds.h>
 
 namespace misaxx::module::kidney_glomeruli_detection {
 

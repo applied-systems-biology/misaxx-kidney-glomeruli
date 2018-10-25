@@ -8,7 +8,7 @@
 #include <coixx/objects/label_min_max_position.h>
 #include "quantification_base.h"
 #include "misaxx_kidney_glomeruli/metadata/glomerulus.h"
-#include <misaxx/metadata/object3d_voxel_size.h>
+#include <misaxx/vdata/object3d_voxel_size.h>
 
 namespace misaxx::module::kidney_glomeruli_detection::quantification {
     struct constrained_klingberg : public quantification_base {
