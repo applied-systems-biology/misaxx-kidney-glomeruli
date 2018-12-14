@@ -5,8 +5,22 @@ include("misaxx_cmake/misaxx.cmake")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(misaxx_kidney_glomeruli misaxx_kidney_glomeruli/kidney_glomeruli_module.h
-        misaxx_kidney_glomeruli/kidney_glomeruli.h misaxx_kidney_glomeruli/segmentation2d/segmentation2d_base.h misaxx_kidney_glomeruli/segmentation2d/klingberg.h misaxx_kidney_glomeruli/segmentation3d/klingberg.h misaxx_kidney_glomeruli/segmentation3d/segmentation3d_base.h misaxx_kidney_glomeruli/segmentation2d/local_otsu.h misaxx_kidney_glomeruli/quantification/quantification_base.h misaxx_kidney_glomeruli/quantification/klingberg.h misaxx_kidney_glomeruli/metadata/glomerulus.h misaxx_kidney_glomeruli/metadata/glomeruli.h misaxx_kidney_glomeruli/quantification/constrained_klingberg.h)
+add_library(misaxx_kidney_glomeruli
+        misaxx_kidney_glomeruli/kidney_glomeruli_module.h
+        misaxx_kidney_glomeruli/kidney_glomeruli.h
+        misaxx_kidney_glomeruli/algorithms/segmentation2d/segmentation2d_base.h
+        misaxx_kidney_glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.h
+        misaxx_kidney_glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h
+        misaxx_kidney_glomeruli/algorithms/segmentation3d/segmentation3d_base.h
+        misaxx_kidney_glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.h
+        misaxx_kidney_glomeruli/algorithms/quantification/quantification_base.h
+        misaxx_kidney_glomeruli/algorithms/quantification/quantification_klingberg.h
+        misaxx_kidney_glomeruli/attachments/glomerulus.h
+        misaxx_kidney_glomeruli/attachments/glomeruli.h
+        misaxx_kidney_glomeruli/algorithms/quantification/quantification_constrained_klingberg.h
+        misaxx_kidney_glomeruli/kidney_glomeruli.cpp
+        misaxx_kidney_glomeruli/kidney_glomeruli_module.cpp misaxx_kidney_glomeruli/algorithms/quantification/quantification_constrained_klingberg.cpp misaxx_kidney_glomeruli/attachments/glomerulus.cpp)
 
 misa_module(misaxx_kidney_glomeruli)
 misa_require_submodule(misaxx_kidney_glomeruli misaxx_tissue)
+misa_require_submodule(misaxx_kidney_glomeruli misaxx_ome)

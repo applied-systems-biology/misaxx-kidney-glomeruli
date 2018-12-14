@@ -6,11 +6,9 @@
 #pragma once
 
 #include "quantification_base.h"
-#include "misaxx_kidney_glomeruli/metadata/glomerulus.h"
-#include <misaxx/vdata/object3d_voxel_size.h>
 
-namespace misaxx::module::kidney_glomeruli_detection::quantification {
-    struct klingberg : public quantification_base {
+namespace misaxx_kidney_glomeruli {
+    struct quantification_klingberg : public quantification_base {
 
         double  m_glomeruli_min_rad = from_algorithm_json_or<double>("glomeruli-min-rad", 15);
         double  m_glomeruli_max_rad = from_algorithm_json_or<double>("glomeruli-max-rad", 65);

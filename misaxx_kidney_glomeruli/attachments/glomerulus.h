@@ -5,12 +5,11 @@
 
 #pragma once
 
-#include <misaxx/vdata/misa_metadata.h>
-#include <misaxx/vdata/object3d_voxel_bounds.h>
+#include <misaxx/misa_serializeable.h>
 
-namespace misaxx::module::kidney_glomeruli_detection {
+namespace misaxx_kidney_glomeruli {
 
-    struct glomerulus : public misa_metadata {
+struct glomerulus : public misaxx::misa_serializeable {
         /**
          * Number of pixels
          */
@@ -50,6 +49,8 @@ namespace misaxx::module::kidney_glomeruli_detection {
         std::string get_name() const override {
             return "glomerulus";
         }
+
+
     };
 
     void to_json(nlohmann::json& j, const glomerulus& p) {

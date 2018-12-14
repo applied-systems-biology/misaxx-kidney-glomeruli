@@ -8,10 +8,10 @@
 #include "segmentation2d_base.h"
 #include <misaxx/vdata/object3d_voxel_size.h>
 
-namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
-    struct klingberg : public segmentation2d_base {
+namespace misaxx_kidney_glomeruli {
+    struct quantification_klingberg : public segmentation2d_base {
 
-        using segmentation2d_base::segmentation2d_base;
+        using segmentation2d_base_base;
 
         int m_median_filter_size = from_algorithm_json_or<int>("median-filter-size", 3);
         double  m_glomeruli_min_rad = from_algorithm_json_or<double>("glomeruli-min-rad", 15);

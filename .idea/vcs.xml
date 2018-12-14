@@ -2,6 +2,20 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/coixx-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/cxxh-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/misaxx-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/misaxx_ome-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/misaxx_ome-src/misaxx_cmake" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/misaxx_tissue-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/misaxx_tissue-src/misaxx_cmake" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/coixx-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/cxxh-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/misaxx-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/misaxx_ome-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/misaxx_ome-src/misaxx_cmake" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/misaxx_tissue-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/misaxx_tissue-src/misaxx_cmake" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/misaxx_cmake" vcs="Git" />
   </component>
 </project>

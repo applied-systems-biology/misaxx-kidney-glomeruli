@@ -11,8 +11,8 @@
 #include <coixx/toolbox/toolbox_binarize_componentotsu.h>
 #include <misaxx/vdata/object3d_voxel_size.h>
 
-namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
-    struct local_otsu : public segmentation2d_base {
+namespace misaxx_kidney_glomeruli {
+    struct segmentation2d_local_otsu : public segmentation2d_base {
 
         int m_median_filter_size = from_algorithm_json_or<int>("median-filter-size", 3);
         double  m_glomeruli_min_rad = from_algorithm_json_or<double>("glomeruli-min-rad", 15);
@@ -22,7 +22,7 @@ namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
         double m_isoperimetric_quotient_threshold = from_algorithm_json_or<double>("isoperimetric-quotient-threshold", 0.8);
         object3d_voxel_size m_voxel_size = from_parameter<object3d_voxel_size>();
 
-        using segmentation2d_base::segmentation2d_base;
+        using segmentation2d_base_base;
 
         void misa_work() override {
            using namespace coixx::toolbox;

@@ -7,9 +7,9 @@
 
 #include "glomerulus.h"
 
-namespace misaxx::module::kidney_glomeruli_detection {
+namespace misaxx_kidney_glomeruli {
 
-    struct glomeruli : public misa_metadata {
+    struct glomeruli : public misaxx::misa_serializeable {
         std::unordered_map<int, glomerulus> data;
 
         nlohmann::json to_json() const override {

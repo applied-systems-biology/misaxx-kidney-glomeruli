@@ -8,12 +8,12 @@
 #include <cxxh/containers/unordered_set_components.h>
 #include "segmentation3d_base.h"
 
-namespace misaxx::module::kidney_glomeruli_detection::segmentation3d {
-    struct klingberg : public segmentation3d_base {
+namespace misaxx_kidney_glomeruli {
+    struct quantification_klingberg : public segmentation3d_base {
 
         double m_max_glomerulus_radius = from_algorithm_json_or<double>("max-glomerulus-radius", 65);
 
-        using segmentation3d_base::segmentation3d_base;
+        using segmentation3d_base_base;
 
         void misa_work() override {
             using namespace coixx::toolbox;

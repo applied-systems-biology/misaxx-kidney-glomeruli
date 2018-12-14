@@ -6,9 +6,9 @@
 #pragma once
 
 #include <misaxx/misa_task.h>
-#include "../kidney_glomeruli.h"
+#include "misaxx_kidney_glomeruli/kidney_glomeruli.h"
 
-namespace misaxx::module::kidney_glomeruli_detection::segmentation2d {
+namespace misaxx_kidney_glomeruli {
     struct segmentation2d_base : public misa_task<kidney_glomeruli> {
 
         misa_data<misa_image_file<images::mask>> m_input_tissue;
