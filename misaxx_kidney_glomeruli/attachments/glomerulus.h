@@ -6,26 +6,28 @@
 #pragma once
 
 #include <misaxx/misa_serializeable.h>
+#include <misaxx_ome/attachments/misa_ome_voxel.h>
+#include <misaxx_ome/attachments/misa_ome_pixel_count.h>
 
 namespace misaxx_kidney_glomeruli {
 
-struct glomerulus : public misaxx::misa_serializeable {
+    struct glomerulus : public misaxx::misa_serializeable {
         /**
          * Number of pixels
          */
-        int pixels = 0;
+        misaxx_ome::misa_ome_pixel_count pixels;
         /**
          * Volume of the glomerulus
          */
-        double volume = 0;
+        misaxx::misa_quantity<double, misaxx_ome::misa_ome_unit_length<3>> volume;
         /**
          * Diameter of the glomerulus
          */
-        double diameter = 0;
+        misaxx::misa_quantity<double, misaxx_ome::misa_ome_unit_length<1>> diameter;
         /**
          * Bounding box of the glomerulus
          */
-        object3d_voxel_bounds bounds;
+        misaxx_ome::misa_ome_voxel bounds;
         /**
          * Label in the labeling output
          */
@@ -35,34 +37,24 @@ struct glomerulus : public misaxx::misa_serializeable {
          */
         bool valid = false;
 
-        nlohmann::json to_json() const override {
-            nlohmann::json j;
-            j["pixels"] = pixels;
-            j["volume"] = volume;
-            j["diameter"] = diameter;
-            j["bounds"] = bounds.to_json();
-            j["label"] = label;
-            j["valid"] = valid;
-            return j;
-        }
+        glomerulus() = default;
 
-        std::string get_name() const override {
-            return "glomerulus";
-        }
+        void from_json(const nlohmann::json &j) override;
 
+        void to_json(nlohmann::json &j) const override;
 
+        void to_json_schema(const misaxx::misa_json_schema &t_schema) const override;
+
+    protected:
+
+        void build_serialization_id_hierarchy(std::vector<misaxx::misa_serialization_id> &result) const override;
     };
 
-    void to_json(nlohmann::json& j, const glomerulus& p) {
-        j = p.to_json();
+    inline void to_json(nlohmann::json &j, const glomerulus &p) {
+        p.to_json(j);
     }
 
-    void from_json(const nlohmann::json& j, glomerulus& p) {
-        p.pixels = j["pixels"];
-        p.volume = j["volume"];
-        p.diameter = j["diameter"];
-        p.bounds = j["bounds"];
-        p.label = j["label"];
-        p.valid = j["valid"];
+    inline void from_json(const nlohmann::json &j, glomerulus &p) {
+        p.from_json(j);
     }
 }
