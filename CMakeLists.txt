@@ -30,7 +30,7 @@ add_library(misaxx_kidney_glomeruli
         misaxx_kidney_glomeruli/attachments/glomeruli.cpp
         misaxx_kidney_glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.cpp)
 
-target_link_libraries(misaxx_kidney_glomeruli PUBLIC LEMON)
+target_link_libraries(misaxx_kidney_glomeruli PUBLIC ${LEMON_LIBRARY})
 
 misa_module(misaxx_kidney_glomeruli)
 misa_require_submodule(misaxx_kidney_glomeruli misaxx_tissue)

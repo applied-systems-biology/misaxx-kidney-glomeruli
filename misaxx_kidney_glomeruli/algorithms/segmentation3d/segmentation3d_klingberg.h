@@ -15,5 +15,20 @@ namespace misaxx_kidney_glomeruli {
         using segmentation3d_base::segmentation3d_base;
 
         void misa_work() override;
+
+        /**
+         * Internally used for the layer graph
+         */
+        struct object {
+            /**
+             * Layer where the object is located
+             */
+            size_t layer = 0;
+
+            /**
+             * Label within its layer
+             */
+            int label = 0;
+        };
     };
 }
