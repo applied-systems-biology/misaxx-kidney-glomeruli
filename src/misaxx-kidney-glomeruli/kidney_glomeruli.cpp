@@ -2,7 +2,7 @@
 // Created by rgerst on 14.12.18.
 //
 
-#include <misaxx_kidney_glomeruli/kidney_glomeruli.h>
+#include <misaxx-kidney-glomeruli/kidney_glomeruli.h>
 
 using namespace misaxx;
 using namespace coixx;

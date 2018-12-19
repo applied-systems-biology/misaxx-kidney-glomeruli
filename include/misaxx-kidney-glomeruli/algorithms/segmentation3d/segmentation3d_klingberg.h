@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "segmentation3d_base.h"
+#include <misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_base.h>
 
 namespace misaxx_kidney_glomeruli {
     struct segmentation3d_klingberg : public segmentation3d_base {

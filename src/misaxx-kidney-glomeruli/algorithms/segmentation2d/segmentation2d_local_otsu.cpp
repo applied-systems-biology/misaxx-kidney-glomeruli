@@ -2,13 +2,13 @@
 // Created by rgerst on 17.12.18.
 //
 
-#include <misaxx_kidney_glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.h>
-#include <coixx/toolbox/toolbox_normalize.h>
-#include <coixx/toolbox/toolbox_labeling.h>
-#include <coixx/toolbox/toolbox_bitwise.h>
-#include <coixx/toolbox/toolbox_resize.h>
-#include <coixx/toolbox/toolbox_recoloring.h>
-#include <coixx/toolbox/toolbox_mask.h>
+#include <misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.h>
+#include <misaxx-coixx/toolbox/toolbox_normalize.h>
+#include <misaxx-coixx/toolbox/toolbox_labeling.h>
+#include <misaxx-coixx/toolbox/toolbox_bitwise.h>
+#include <misaxx-coixx/toolbox/toolbox_resize.h>
+#include <misaxx-coixx/toolbox/toolbox_recoloring.h>
+#include <misaxx-coixx/toolbox/toolbox_mask.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;

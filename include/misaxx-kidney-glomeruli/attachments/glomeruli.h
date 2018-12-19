@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <cxxh/string.h>
-#include "glomerulus.h"
+#include <misaxx-helpers/string.h>
+#include <misaxx-kidney-glomeruli/attachments/glomerulus.h>
 
 namespace misaxx_kidney_glomeruli {
 

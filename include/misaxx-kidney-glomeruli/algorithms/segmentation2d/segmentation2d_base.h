@@ -6,9 +6,9 @@
 #pragma once
 
 #include <misaxx/workers/misa_task.h>
-#include <misaxx_kidney_glomeruli/kidney_glomeruli.h>
-#include <misaxx_ome/accessors/misa_ome_plane.h>
-#include <coixx/image.h>
+#include <misaxx-kidney-glomeruli/kidney_glomeruli.h>
+#include <misaxx-ome/accessors/misa_ome_plane.h>
+#include <misaxx-coixx/image.h>
 
 namespace misaxx_kidney_glomeruli {
     struct segmentation2d_base : public misaxx::misa_task<kidney_glomeruli> {

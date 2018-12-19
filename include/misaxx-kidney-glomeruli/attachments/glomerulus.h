@@ -6,8 +6,8 @@
 #pragma once
 
 #include <misaxx/misa_serializeable.h>
-#include <misaxx_ome/attachments/misa_ome_voxel.h>
-#include <misaxx_ome/attachments/misa_ome_pixel_count.h>
+#include <misaxx-ome/attachments/misa_ome_voxel.h>
+#include <misaxx-ome/attachments/misa_ome_pixel_count.h>
 
 namespace misaxx_kidney_glomeruli {
 

@@ -2,15 +2,15 @@
 // Created by rgerst on 17.12.18.
 //
 
-#include <coixx/toolbox/toolbox_labeling.h>
-#include <coixx/recoloring_map.h>
-#include <coixx/toolbox/toolbox_recoloring.h>
-#include <cxxh/unordered_set_components.h>
-#include "segmentation3d_klingberg.h"
+#include <misaxx-coixx/toolbox/toolbox_labeling.h>
+#include <misaxx-coixx/recoloring_map.h>
+#include <misaxx-coixx/toolbox/toolbox_recoloring.h>
+#include <misaxx-helpers/unordered_set_components.h>
+#include "../../../../misaxx_kidney_glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h"
 #include <lemon/list_graph.h>
 #include <lemon/connectivity.h>
-#include <coixx/toolbox/toolbox_objects.h>
-#include <coixx/objects/label_dummy_property.h>
+#include <misaxx-coixx/toolbox/toolbox_objects.h>
+#include <misaxx-coixx/objects/label_dummy_property.h>
 #include <utility>
 
 using namespace misaxx;

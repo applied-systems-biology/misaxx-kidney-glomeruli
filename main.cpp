@@ -3,7 +3,7 @@
 //
 
 #include <misaxx/runtime/misa_cli.h>
-#include <misaxx_kidney_glomeruli/kidney_glomeruli_detection_module.h>
+#include "misaxx-kidney-glomeruli/misaxx_kidney_glomeruli_module.h"
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;

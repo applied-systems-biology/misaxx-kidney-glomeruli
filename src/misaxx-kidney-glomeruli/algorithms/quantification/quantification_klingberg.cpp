@@ -2,9 +2,9 @@
 // Created by rgerst on 17.12.18.
 //
 
-#include <misaxx_kidney_glomeruli/algorithms/quantification/quantification_klingberg.h>
-#include <coixx/objects/label_pixel_count.h>
-#include <coixx/toolbox/toolbox_objects.h>
+#include <misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.h>
+#include <misaxx-coixx/objects/label_pixel_count.h>
+#include <misaxx-coixx/toolbox/toolbox_objects.h>
 
 using namespace misaxx;
 using namespace misaxx_ome;

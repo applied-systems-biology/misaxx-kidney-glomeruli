@@ -2,12 +2,12 @@
 // Created by rgerst on 17.12.18.
 //
 
-#include <misaxx_kidney_glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.h>
-#include <coixx/toolbox/toolbox_statistics.h>
-#include <coixx/toolbox/toolbox_blur.h>
-#include <coixx/toolbox/toolbox_normalize.h>
-#include <coixx/toolbox/toolbox_morph.h>
-#include <coixx/structuring_element.h>
+#include <misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.h>
+#include <misaxx-coixx/toolbox/toolbox_statistics.h>
+#include <misaxx-coixx/toolbox/toolbox_blur.h>
+#include <misaxx-coixx/toolbox/toolbox_normalize.h>
+#include <misaxx-coixx/toolbox/toolbox_morph.h>
+#include <misaxx-coixx/structuring_element.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;

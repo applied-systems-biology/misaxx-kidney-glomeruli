@@ -6,10 +6,10 @@
 #pragma once
 
 #include "segmentation2d_base.h"
-#include <coixx/toolbox/toolbox_blob.h>
-#include <coixx/toolbox/toolbox_localminmax.h>
-#include <coixx/toolbox/toolbox_binarize_componentotsu.h>
-#include <coixx/recoloring_map.h>
+#include <misaxx-coixx/toolbox/toolbox_blob.h>
+#include <misaxx-coixx/toolbox/toolbox_localminmax.h>
+#include <misaxx-coixx/toolbox/toolbox_binarize_componentotsu.h>
+#include <misaxx-coixx/recoloring_map.h>
 
 namespace misaxx_kidney_glomeruli {
     struct segmentation2d_local_otsu : public segmentation2d_base {

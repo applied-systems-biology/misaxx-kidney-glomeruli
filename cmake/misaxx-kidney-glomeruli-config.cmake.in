@@ -1,0 +1,9 @@
+@PACKAGE_INIT@
+
+find_package(misaxx-core REQUIRED)
+find_package(LEMON REQUIRED)
+find_package(misaxx-tissue REQUIRED)
+
+if(NOT TARGET misaxx-kidney-glomeruli)
+include(${CMAKE_CURRENT_LIST_DIR}/misaxx-kidney-glomeruli-targets.cmake)
+endif()
