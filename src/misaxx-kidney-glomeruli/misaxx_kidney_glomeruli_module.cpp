@@ -8,7 +8,7 @@ using namespace misaxx;
 using namespace coixx;
 using namespace misaxx_kidney_glomeruli;
 
-void kidney_glomeruli_detection_module::misa_init() {
+void misaxx_kidney_glomeruli_module::misa_init() {
 
     // Load voxel size
     std::cout << m_input_autofluorescence.get_ome_metadata()->dumpXML() << std::endl;

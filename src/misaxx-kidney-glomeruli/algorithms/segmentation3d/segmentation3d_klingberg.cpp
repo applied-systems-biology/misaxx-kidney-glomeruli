@@ -6,7 +6,7 @@
 #include <misaxx-coixx/recoloring_map.h>
 #include <misaxx-coixx/toolbox/toolbox_recoloring.h>
 #include <misaxx-helpers/unordered_set_components.h>
-#include "../../../../misaxx_kidney_glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h"
+#include <misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h>
 #include <lemon/list_graph.h>
 #include <lemon/connectivity.h>
 #include <misaxx-coixx/toolbox/toolbox_objects.h>

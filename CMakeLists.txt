@@ -32,3 +32,4 @@ target_link_libraries(misaxx-kidney-glomeruli PUBLIC misaxx::misaxx-tissue)
 target_link_libraries(misaxx-kidney-glomeruli PUBLIC ${LEMON_LIBRARY})
 
 misaxx_make_shared(misaxx misaxx-kidney-glomeruli)
+misaxx_add_default_executable(misaxx-kidney-glomeruli)

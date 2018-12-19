@@ -18,10 +18,10 @@
 
 namespace misaxx_kidney_glomeruli {
 
-    struct kidney_glomeruli_detection_module : public misaxx::misa_module<kidney_glomeruli> {
+    struct misaxx_kidney_glomeruli_module : public misaxx::misa_module<kidney_glomeruli> {
         using misaxx::misa_module<kidney_glomeruli>::misa_module;
 
-        dispatched <misaxx_tissue::tissue_detection_module> dispatch_tissue_detection = future_dispatch(m_tissue_detection);
+        dispatched <misaxx_tissue::misaxx_tissue_module> dispatch_tissue_detection = future_dispatch(m_tissue_detection);
 
         dispatched <segmentation2d_base> dispatch_segmentation2d =
                 select_from_algorithm_json_or<segmentation2d_base>("segmentation2d",
