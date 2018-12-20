@@ -44,11 +44,11 @@ void segmentation3d_klingberg::misa_work() {
 
         // Label the 2D segmented object masks
         int img_labels_max_component = 0;
-        images::grayscale32s img_labels = labeling::connected_components(input_plane.access_readonly().get(), img_labels_max_component);
-        output_plane.write(img_labels.clone());
+        layer_last = labeling::connected_components(input_plane.access_readonly().get(), img_labels_max_component);
+        output_plane.write(layer_last.clone());
 
         // Process the components
-        toolbox::objects::label_properties<label_dummy_property> prop(img_labels);
+        toolbox::objects::label_properties<label_dummy_property> prop(layer_last);
         for(const auto &kv : prop) {
             auto nd = layer_graph.addNode();
             object o;
@@ -111,7 +111,7 @@ void segmentation3d_klingberg::misa_work() {
             current_layer_nodes[u] = nd;
         }
 
-        // Connect edges TODO: Anna's algorithm with a limit
+        // Connect edges TODO: Anna's algorithm with a limit (Also TODO: Limit is not correctly calculated for voxel depth, even in python)
         for(const std::pair<int, int> &uv : edges) {
             int u = uv.first;
             int v = uv.second;
