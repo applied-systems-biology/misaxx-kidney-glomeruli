@@ -12,6 +12,7 @@
 #include <misaxx-coixx/toolbox/toolbox_objects.h>
 #include <misaxx-coixx/objects/label_dummy_property.h>
 #include <utility>
+#include <unordered_set>
 
 using namespace misaxx;
 using namespace coixx;
@@ -75,7 +76,7 @@ void segmentation3d_klingberg::misa_work() {
         images::grayscale32s img_labels = labeling::connected_components(input_plane.access_readonly().get(), img_labels_max_component);
         output_plane.write(img_labels.clone());
 
-        std::cout << "Found " << (img_labels_max_component - 1) << " glomeruli in this layer" << std::endl;
+        std::cout << "Found " << img_labels_max_component << " glomeruli in this layer" << std::endl;
 
         // Find the edges
         std::unordered_set<int> new_nodes;

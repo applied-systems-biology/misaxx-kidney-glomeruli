@@ -33,9 +33,9 @@ void segmentation2d_klingberg::misa_work() {
     img << blur::median(m_median_filter_size) << normalize::by_max();
 
     // Generated parameters
-    const double voxel_xy_area = module()->m_voxel_size.get_xy_area().get_value();
-    int glomeruli_max_morph_disk_radius = static_cast<int>(m_glomeruli_max_rad / voxel_xy_area);
-    int glomeruli_min_morph_disk_radius = static_cast<int>((m_glomeruli_min_rad / 2.0) / voxel_xy_area);
+    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
+    int glomeruli_max_morph_disk_radius = static_cast<int>(m_glomeruli_max_rad / voxel_xy);
+    int glomeruli_min_morph_disk_radius = static_cast<int>((m_glomeruli_min_rad / 2.0) / voxel_xy);
 
     // Morphological operation (opening)
     // Corresponds to only allowing objects > disk_size to be included

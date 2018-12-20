@@ -46,13 +46,13 @@ void segmentation2d_local_otsu::misa_work() {
 
     // Local maxima selection is expensive (Due to dilation).
     // Instead use a two-step approach that only requires the dilation with the small selection
-    const double voxel_xy_area = module()->m_voxel_size.get_xy_area().get_value();
-    images::mask blobs_all_maxima = extract_maxima(blobs.clone(), img, tissue_mask, m_glomeruli_min_rad / voxel_xy_area);
+    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
+    images::mask blobs_all_maxima = extract_maxima(blobs.clone(), img, tissue_mask, m_glomeruli_min_rad / voxel_xy);
     blobs_all_maxima << values::set_where_not(colors::mask::background(), cortex_mask);
 
     // We first try to segment large glomeruli to prevent oversegmentation (in combination with deleting already segmented maxima)
     for(const double radius_microns : { m_glomeruli_max_rad, m_glomeruli_min_rad }) {
-        const double radius = radius_microns / voxel_xy_area;
+        const double radius = radius_microns / voxel_xy;
 
         images::mask blobs_maxima = blobs_all_maxima.clone();
         if(radius_microns != m_glomeruli_min_rad) {
@@ -79,9 +79,9 @@ coixx::images::grayscale_float segmentation2d_local_otsu::extract_blobs_log(cons
 
     using namespace coixx::toolbox;
 
-    const double voxel_xy_area = module()->m_voxel_size.get_xy_area().get_value();
-    const double glomeruli_min_rad_sigma = (m_glomeruli_min_rad / voxel_xy_area) / sqrt(2);
-    const double glomeruli_max_rad_sigma = (m_glomeruli_max_rad / voxel_xy_area) / sqrt(2);
+    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
+    const double glomeruli_min_rad_sigma = (m_glomeruli_min_rad / voxel_xy) / sqrt(2);
+    const double glomeruli_max_rad_sigma = (m_glomeruli_max_rad / voxel_xy) / sqrt(2);
     const double avg_rad_sigma = (glomeruli_min_rad_sigma + glomeruli_max_rad_sigma) / 2;
 
     images::grayscale_float log_response = img.clone() << blob::laplacian_of_gaussian(avg_rad_sigma);
@@ -147,8 +147,8 @@ segmentation2d_local_otsu::find_cortex_otsu_distance_and_dilation(const coixx::i
 
     using namespace coixx::toolbox;
 
-    const double voxel_xy_area = module()->m_voxel_size.get_xy_area().get_value();
-    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad / voxel_xy_area) * 2);
+    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
+    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad / voxel_xy) * 2);
 
     images::grayscale_float cortex_dist(blobs.get_size(), colors::grayscale_float::black());
     cv::distanceTransform(tissue_mask.get_image(), cortex_dist.get_image(), cv::DIST_L2, 3);
@@ -237,9 +237,9 @@ segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(con
     }
 
     // Blacklist phase
-    const double voxel_xy_area = module()->m_voxel_size.get_xy_area().get_value();
-    const int glomeruli_min_rad = static_cast<int>(m_glomeruli_min_rad / voxel_xy_area);
-    const int glomeruli_max_rad = static_cast<int>(m_glomeruli_max_rad / voxel_xy_area);
+    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
+    const int glomeruli_min_rad = static_cast<int>(m_glomeruli_min_rad / voxel_xy);
+    const int glomeruli_max_rad = static_cast<int>(m_glomeruli_max_rad / voxel_xy);
 
     for(size_t label = 1; label < label_contours.size(); ++label) {
         const auto contour = label_contours[label];
@@ -300,8 +300,8 @@ coixx::images::mask segmentation2d_local_otsu::segment_glomeruli_local_otsu(cons
 
     using namespace coixx::toolbox;
 
-    const double voxel_xy_area = module()->m_voxel_size.get_xy_area().get_value();
-    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad / voxel_xy_area) * 2);
+    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
+    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad / voxel_xy) * 2);
     const int glomeruli_search_diameter = glomeruli_max_diameter + m_voronoi_cell_radius_border;
 
     // Create an area around each maximum

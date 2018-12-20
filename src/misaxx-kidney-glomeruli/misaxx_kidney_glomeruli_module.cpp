@@ -24,7 +24,7 @@ void misaxx_kidney_glomeruli_module::misa_init() {
     for (size_t plane = 0; plane < m_input_autofluorescence.size(); ++plane) {
         auto &worker = misa_dispatch(dispatch_segmentation2d);
         worker.m_input_autofluoresence = m_input_autofluorescence.at(plane);
-//        worker.m_input_tissue = m_tissue_detection. // TODO
+        worker.m_input_tissue = m_tissue_detection.definition().m_output_segmented3d.at(plane);
         worker.m_output_segmented2d = m_output_segmented2d.at(plane);
         segmentation2d << worker;
     }
