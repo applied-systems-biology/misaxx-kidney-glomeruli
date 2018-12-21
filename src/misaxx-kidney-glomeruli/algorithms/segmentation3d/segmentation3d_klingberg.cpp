@@ -18,12 +18,72 @@ using namespace misaxx;
 using namespace coixx;
 using namespace misaxx_kidney_glomeruli;
 
+/**
+* Internally used for the layer graph
+*/
+struct node_weight {
+    /**
+     * Layer where the object is located
+     */
+    size_t layer = 0;
+
+    /**
+     * Label within its layer
+     */
+    int label = 0;
+
+    /**
+     * Height of the current object
+     */
+    size_t height = 0;
+};
+
+/**
+ * Recalculates the height property of each node
+ * @param layer_graph
+ */
+void recalculate_heights(lemon::ListGraph &g, lemon::ListGraph::NodeMap<node_weight> &w, size_t max_layer) {
+    for(auto nd = lemon::ListGraph::NodeIt(g); nd != lemon::INVALID; ++nd) {
+        w[nd].height = 0;
+    }
+    for(auto e = lemon::ListGraph::EdgeIt(g); e != lemon::INVALID; ++e) {
+        auto u = g.u(e);
+        auto v = g.v(e);
+        assert(w[v].layer < w[u].layer);
+
+        w[u].height = max_layer - std::max(w[u].height, w[v].height + 1);
+    }
+}
+
+/**
+ * Cut all connections to the cutoff-layer from below
+ * @param g
+ * @param layer_nodes
+ * @param cutoff_layer
+ */
+void cut_connections_to(lemon::ListGraph &g, const lemon::ListGraph::Node &nd, lemon::ListGraph::NodeMap<node_weight> &w) {
+    std::vector<lemon::ListGraph::Edge> to_remove;
+    for(auto e = lemon::ListGraph::IncEdgeIt(g, nd); e != lemon::INVALID; ++e) {
+        auto u = g.u(e);
+        auto v = g.v(e);
+        assert(v == nd);
+
+        if(w[u].layer < w[v].layer) {
+            to_remove.push_back(e);
+        }
+    }
+    for(const auto &e : to_remove) {
+        g.erase(e);
+    }
+}
+
+
 void segmentation3d_klingberg::misa_work() {
     using namespace coixx::toolbox;
     using recoloring_t = identity_recoloring_hashmap<colors::labels>;
 
     // The limit on how large a glomerulus in Z-direction can be at most
-    const auto maximum_layer_count = static_cast<int>(m_max_glomerulus_radius);
+    const size_t maximum_layer_count = static_cast<size_t>(m_max_glomerulus_radius);
 
     // Layers and their names, as well as the number of already saved layers
     images::grayscale32s layer_last;
@@ -31,14 +91,15 @@ void segmentation3d_klingberg::misa_work() {
     // Graph where a node consists of (layer_index, label) and edges represent that
     // two nodes should be assigned to the same final label
     lemon::ListGraph layer_graph;
-    lemon::ListGraph::NodeMap<object> node_map(layer_graph);
+    lemon::ListGraph::NodeMap<node_weight> node_weights(layer_graph);
 
     // Assigns the group of the last layer to its LEMON node
-    std::unordered_map<int, lemon::ListGraph::Node> last_layer_nodes;
-    std::unordered_map<int, lemon::ListGraph::Node> current_layer_nodes;
+    std::vector<std::unordered_map<int, lemon::ListGraph::Node>> layer_nodes;
 
     // For the first layer, only record the nodes
     {
+        layer_nodes.emplace_back(std::unordered_map<int, lemon::ListGraph::Node>());
+
         const auto input_plane = m_input_segmented2d.at(0);
         auto output_plane = m_output_segmented3d.at(0);
 
@@ -51,11 +112,11 @@ void segmentation3d_klingberg::misa_work() {
         toolbox::objects::label_properties<label_dummy_property> prop(layer_last);
         for(const auto &kv : prop) {
             auto nd = layer_graph.addNode();
-            object o;
+            node_weight o;
             o.layer = 0;
             o.label = kv.first;
-            node_map.set(nd, o);
-            current_layer_nodes[kv.first] = nd;
+            node_weights.set(nd, o);
+            layer_nodes[0][kv.first] = nd;
         }
 
         std::cout << "Found " << (img_labels_max_component - 1) << " glomeruli in first layer" << std::endl;
@@ -63,10 +124,7 @@ void segmentation3d_klingberg::misa_work() {
 
     // For all other layers also look at the overlap
     for(size_t layer_index = 1; layer_index < m_input_segmented2d.size(); ++layer_index) {
-
-        // Clear the node assignments of the current map
-        std::swap(current_layer_nodes, last_layer_nodes);
-        current_layer_nodes.clear();
+        layer_nodes.emplace_back(std::unordered_map<int, lemon::ListGraph::Node>());
 
         // Label the 2D segmented object masks
         const auto input_plane = m_input_segmented2d.at(layer_index);
@@ -104,24 +162,41 @@ void segmentation3d_klingberg::misa_work() {
         // Add new nodes into the graph
         for(int u : new_nodes) {
             auto nd = layer_graph.addNode();
-            object o;
+            node_weight o;
             o.layer = layer_index;
             o.label = u;
-            node_map.set(nd, o);
-            current_layer_nodes[u] = nd;
+            node_weights.set(nd, o);
+            layer_nodes[layer_index][u] = nd;
         }
 
-        // Connect edges TODO: Anna's algorithm with a limit (Also TODO: Limit is not correctly calculated for voxel depth, even in python)
+        // Connect edges
         for(const std::pair<int, int> &uv : edges) {
             int u = uv.first;
             int v = uv.second;
-            layer_graph.addEdge(current_layer_nodes.at(u), last_layer_nodes.at(v));
+            layer_graph.addEdge(layer_nodes[layer_index].at(u), layer_nodes[layer_index - 1].at(v));
         }
 
         // Store the last layer from the current groups
         layer_last = img_labels.clone();
 
 //        std::cout << "Layer finished. Current number of non-unique groups is " << layers_group_number  << std::endl;
+    }
+
+    // Objects can be still connected with small 1px connections or overdetection
+    // Use the height of each of those connected objects to split edges according to a maximum height
+    // TODO: In Anna's algorithm maximum_layer_count is equal to int(max glomerulus size), but it should be int(max_glomerulus_size / voxel_size.z)
+    // Emulates implementation by Klingberg et al where object updates go from "top to bottom"
+    recalculate_heights(layer_graph, node_weights, m_input_segmented2d.size() - 1);
+    for(size_t layer_index = m_input_segmented2d.size() - 1; layer_index >= 0; --layer_index) {
+        for(const auto &kv : layer_nodes.at(layer_index)) {
+            const auto &nd = kv.second;
+            size_t height = (m_input_segmented2d.size() - 1) - node_weights[nd].height; // The height from "top to bottom"
+            if(height > maximum_layer_count - 1) {
+                size_t cutoff_layer = height - maximum_layer_count - 1;
+                cut_connections_to(layer_graph, nd, node_weights);
+                recalculate_heights(layer_graph, node_weights, m_input_segmented2d.size() - 1);
+            }
+        }
     }
 
     // Find the connected components in the graph and generate a LUT for each layer based on this component
@@ -133,7 +208,7 @@ void segmentation3d_klingberg::misa_work() {
 
         zero_recoloring_hashmap<colors::labels> recoloring;
         for(auto nd = lemon::ListGraph::NodeIt(layer_graph); nd != lemon::INVALID; ++nd) {
-            const auto obj = node_map[nd];
+            const auto obj = node_weights[nd];
             if(obj.layer == layer_index) {
                 int component = connected_components[nd] + 1; // Starts with 0
                 recoloring.set_recolor(colors::labels(obj.label), colors::labels(component));
