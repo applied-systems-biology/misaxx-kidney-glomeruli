@@ -187,12 +187,11 @@ void segmentation3d_klingberg::misa_work() {
     // TODO: In Anna's algorithm maximum_layer_count is equal to int(max glomerulus size), but it should be int(max_glomerulus_size / voxel_size.z)
     // Emulates implementation by Klingberg et al where object updates go from "top to bottom"
     recalculate_heights(layer_graph, node_weights, m_input_segmented2d.size() - 1);
-    for(size_t layer_index = m_input_segmented2d.size() - 1; layer_index >= 0; --layer_index) {
-        for(const auto &kv : layer_nodes.at(layer_index)) {
+    for(size_t next_layer_index = m_input_segmented2d.size(); next_layer_index != 0; --next_layer_index) {
+        for(const auto &kv : layer_nodes.at(next_layer_index - 1)) {
             const auto &nd = kv.second;
             size_t height = (m_input_segmented2d.size() - 1) - node_weights[nd].height; // The height from "top to bottom"
             if(height > maximum_layer_count - 1) {
-                size_t cutoff_layer = height - maximum_layer_count - 1;
                 cut_connections_to(layer_graph, nd, node_weights);
                 recalculate_heights(layer_graph, node_weights, m_input_segmented2d.size() - 1);
             }
