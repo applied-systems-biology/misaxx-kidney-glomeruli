@@ -6,33 +6,23 @@
 #pragma once
 
 #include <misaxx-helpers/string.h>
+#include <misaxx/attachments/misa_locatable.h>
+#include <misaxx/attachments/misa_labeled_object_location.h>
 #include <misaxx-kidney-glomeruli/attachments/glomerulus.h>
 
 namespace misaxx_kidney_glomeruli {
 
-    struct glomeruli : public misaxx::misa_serializeable {
+    struct glomeruli : public misaxx::misa_locatable<misaxx::misa_location> {
         std::unordered_map<int, glomerulus> data;
 
-        void from_json(const nlohmann::json &t_json) override {
+        void from_json(const nlohmann::json &t_json) override;
 
-        }
+        void to_json(nlohmann::json &t_json) const override;
 
-        void to_json(nlohmann::json &t_json) const override {
-            misa_serializeable::to_json(t_json);
-            for(const auto &kv : data) {
-                kv.second.to_json(t_json["data"][cxxh::to_string(kv.first)]);
-            }
-        }
-
-        void to_json_schema(const misaxx::misa_json_schema &t_schema) const override {
-            t_schema.resolve("data").declare_required<std::unordered_map<int, glomerulus>>();
-        }
+        void to_json_schema(const misaxx::misa_json_schema &t_schema) const override;
 
     protected:
-        void build_serialization_id_hierarchy(std::vector<misaxx::misa_serialization_id> &result) const override {
-            misa_serializeable::build_serialization_id_hierarchy(result);
-            result.emplace_back(misaxx::misa_serialization_id("misa_kidney_glomeruli", "attachments/glomeruli"));
-        }
+        void build_serialization_id_hierarchy(std::vector<misaxx::misa_serialization_id> &result) const override;
     };
 
     inline void to_json(nlohmann::json& j, const glomeruli& p) {

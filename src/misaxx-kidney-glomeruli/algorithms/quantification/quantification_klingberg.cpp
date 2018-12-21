@@ -14,6 +14,7 @@ using namespace coixx;
 void quantification_klingberg::misa_work() {
 
     glomeruli result;
+    result.location = misa_location(module()->m_output_segmented3d);
 
     for(const auto &plane : m_input_segmented3d) {
         auto access = plane.access_readonly();
@@ -28,6 +29,7 @@ void quantification_klingberg::misa_work() {
                 continue;
 
             glomerulus glom;
+            glom.location = misa_labeled_object_location(module()->m_output_segmented3d, group);
             glom.pixels.count += glom_properties.get<label_pixel_count>().pixels;
             result.data[group] = std::move(glom);
         }

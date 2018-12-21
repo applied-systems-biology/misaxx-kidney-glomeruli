@@ -8,10 +8,12 @@
 #include <misaxx/misa_serializeable.h>
 #include <misaxx-ome/attachments/misa_ome_voxel.h>
 #include <misaxx-ome/attachments/misa_ome_pixel_count.h>
+#include <misaxx/attachments/misa_locatable.h>
+#include <misaxx/attachments/misa_labeled_object_location.h>
 
 namespace misaxx_kidney_glomeruli {
 
-    struct glomerulus : public misaxx::misa_serializeable {
+    struct glomerulus : public misaxx::misa_locatable<misaxx::misa_labeled_object_location> {
         /**
          * Number of pixels
          */

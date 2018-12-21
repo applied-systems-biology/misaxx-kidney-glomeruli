@@ -47,7 +47,7 @@ void segmentation2d_local_otsu::misa_work() {
     // Local maxima selection is expensive (Due to dilation).
     // Instead use a two-step approach that only requires the dilation with the small selection
     const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
-    images::mask blobs_all_maxima = extract_maxima(blobs.clone(), img, tissue_mask, m_glomeruli_min_rad / voxel_xy);
+    images::mask blobs_all_maxima = extract_maxima(blobs.clone(), tissue_mask, m_glomeruli_min_rad / voxel_xy);
     blobs_all_maxima << values::set_where_not(colors::mask::background(), cortex_mask);
 
     // We first try to segment large glomeruli to prevent oversegmentation (in combination with deleting already segmented maxima)
@@ -100,7 +100,6 @@ coixx::images::grayscale_float segmentation2d_local_otsu::extract_blobs_log(cons
 }
 
 coixx::images::mask segmentation2d_local_otsu::extract_maxima(coixx::images::grayscale_float blobs,
-                                                              const coixx::images::grayscale_float &img,
                                                               const coixx::images::mask &tissue_mask,
                                                               const double t_radius) {
 
@@ -188,7 +187,7 @@ segmentation2d_local_otsu::find_cortex_otsu_distance_and_dilation(const coixx::i
 }
 
 void
-segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(const coixx::images::grayscale_float &img,
+segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(const coixx::images::grayscale_float &,
                                                                              const coixx::images::mask &blobs_maxima_mask,
                                                                              const coixx::images::mask &local_otsu_mask,
                                                                              const coixx::images::grayscale32s &local_otsu_mask_components,

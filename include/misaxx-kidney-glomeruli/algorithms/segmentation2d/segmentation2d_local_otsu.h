@@ -43,7 +43,6 @@ namespace misaxx_kidney_glomeruli {
          * @return
          */
         coixx::images::mask extract_maxima(coixx::images::grayscale_float blobs,
-                                    const coixx::images::grayscale_float &img,
                                     const coixx::images::mask &tissue_mask,
                                     const double t_radius);
 

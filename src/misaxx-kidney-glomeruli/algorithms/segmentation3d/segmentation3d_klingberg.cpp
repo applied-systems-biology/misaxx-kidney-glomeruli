@@ -38,22 +38,23 @@ struct node_weight {
     size_t height = 0;
 };
 
-/**
+namespace {
+    /**
  * Recalculates the height property of each node
  * @param layer_graph
  */
-void recalculate_heights(lemon::ListGraph &g, lemon::ListGraph::NodeMap<node_weight> &w, size_t max_layer) {
-    for(auto nd = lemon::ListGraph::NodeIt(g); nd != lemon::INVALID; ++nd) {
-        w[nd].height = 0;
-    }
-    for(auto e = lemon::ListGraph::EdgeIt(g); e != lemon::INVALID; ++e) {
-        auto u = g.u(e);
-        auto v = g.v(e);
-        assert(w[v].layer < w[u].layer);
+    void recalculate_heights(lemon::ListGraph &g, lemon::ListGraph::NodeMap<node_weight> &w, size_t max_layer) {
+        for(auto nd = lemon::ListGraph::NodeIt(g); nd != lemon::INVALID; ++nd) {
+            w[nd].height = 0;
+        }
+        for(auto e = lemon::ListGraph::EdgeIt(g); e != lemon::INVALID; ++e) {
+            auto u = g.u(e);
+            auto v = g.v(e);
+            assert(w[v].layer < w[u].layer);
 
-        w[u].height = max_layer - std::max(w[u].height, w[v].height + 1);
+            w[u].height = max_layer - std::max(w[u].height, w[v].height + 1);
+        }
     }
-}
 
 /**
  * Cut all connections to the cutoff-layer from below
@@ -61,22 +62,22 @@ void recalculate_heights(lemon::ListGraph &g, lemon::ListGraph::NodeMap<node_wei
  * @param layer_nodes
  * @param cutoff_layer
  */
-void cut_connections_to(lemon::ListGraph &g, const lemon::ListGraph::Node &nd, lemon::ListGraph::NodeMap<node_weight> &w) {
-    std::vector<lemon::ListGraph::Edge> to_remove;
-    for(auto e = lemon::ListGraph::IncEdgeIt(g, nd); e != lemon::INVALID; ++e) {
-        auto u = g.u(e);
-        auto v = g.v(e);
-        assert(v == nd);
+    void cut_connections_to(lemon::ListGraph &g, const lemon::ListGraph::Node &nd, lemon::ListGraph::NodeMap<node_weight> &w) {
+        std::vector<lemon::ListGraph::Edge> to_remove;
+        for(auto e = lemon::ListGraph::IncEdgeIt(g, nd); e != lemon::INVALID; ++e) {
+            auto u = g.u(e);
+            auto v = g.v(e);
+            assert(v == nd);
 
-        if(w[u].layer < w[v].layer) {
-            to_remove.push_back(e);
+            if(w[u].layer < w[v].layer) {
+                to_remove.push_back(e);
+            }
+        }
+        for(const auto &e : to_remove) {
+            g.erase(e);
         }
     }
-    for(const auto &e : to_remove) {
-        g.erase(e);
-    }
 }
-
 
 void segmentation3d_klingberg::misa_work() {
     using namespace coixx::toolbox;
