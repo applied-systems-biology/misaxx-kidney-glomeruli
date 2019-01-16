@@ -6,14 +6,6 @@
 #pragma once
 
 #include <misaxx/misa_module.h>
-#include "../../src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_base.h"
-#include "../../src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_base.h"
-#include "../../src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_base.h"
-#include "../../src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.h"
-#include "../../src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.h"
-#include "../../src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.h"
-#include "../../src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_constrained_klingberg.h"
-#include "../../src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h"
 #include "kidney_glomeruli.h"
 
 namespace misaxx_kidney_glomeruli {
