@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.11)
-project(misaxx-kidney-glomeruli VERSION 0.1.0)
+project(misaxx-kidney-glomeruli VERSION 0.1.0 DESCRIPTION "MISA++ Kidney Glomeruli Segmentation")
 
 find_package(LEMON REQUIRED)
 find_package(misaxx-tissue REQUIRED)
