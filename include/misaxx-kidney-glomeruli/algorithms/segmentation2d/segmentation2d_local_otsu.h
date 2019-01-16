@@ -14,16 +14,18 @@
 namespace misaxx_kidney_glomeruli {
     struct segmentation2d_local_otsu : public segmentation2d_base {
 
-        int m_median_filter_size = from_algorithm_json_or<int>("median-filter-size", 3);
-        double  m_glomeruli_min_rad = from_algorithm_json_or<double>("glomeruli-min-rad", 15);
-        double  m_glomeruli_max_rad = from_algorithm_json_or<double>("glomeruli-max-rad", 65);
-        double m_cortex_segmentation_dilation_group_size = from_algorithm_json_or<double>("cortex-segmentation-dilation-group-size", 5);
-        int m_voronoi_cell_radius_border = from_algorithm_json_or<int>("voronoi-cell-radius-border", 5);
-        double m_isoperimetric_quotient_threshold = from_algorithm_json_or<double>("isoperimetric-quotient-threshold", 0.8);
+        parameter<int> m_median_filter_size;
+        parameter<double>  m_glomeruli_min_rad;
+        parameter<double>  m_glomeruli_max_rad;
+        parameter<double> m_cortex_segmentation_dilation_group_size;
+        parameter<int> m_voronoi_cell_radius_border;
+        parameter<double> m_isoperimetric_quotient_threshold;
 
         using segmentation2d_base::segmentation2d_base;
 
-        void misa_work() override;
+        void work() override;
+
+        void create_parameters(misaxx::misa_parameter_builder &t_parameters) override;
 
     protected:
 

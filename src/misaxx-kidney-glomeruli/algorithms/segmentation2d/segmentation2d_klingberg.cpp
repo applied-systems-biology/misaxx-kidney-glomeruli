@@ -13,7 +13,10 @@ using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
 using namespace coixx;
 
-void segmentation2d_klingberg::misa_work() {
+void segmentation2d_klingberg::work() {
+
+    auto module = get_module_as<kidney_glomeruli>();
+
     using namespace coixx::toolbox;
 
     images::mask img_non_tissue_mask = m_input_tissue.clone();
@@ -30,12 +33,12 @@ void segmentation2d_klingberg::misa_work() {
     auto img_original = img.clone();
 
     // Initial median filtering + normalization
-    img << blur::median(m_median_filter_size) << normalize::by_max();
+    img << blur::median(m_median_filter_size.query()) << normalize::by_max();
 
     // Generated parameters
-    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
-    int glomeruli_max_morph_disk_radius = static_cast<int>(m_glomeruli_max_rad / voxel_xy);
-    int glomeruli_min_morph_disk_radius = static_cast<int>((m_glomeruli_min_rad / 2.0) / voxel_xy);
+    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
+    int glomeruli_max_morph_disk_radius = static_cast<int>(m_glomeruli_max_rad.query() / voxel_xy);
+    int glomeruli_min_morph_disk_radius = static_cast<int>((m_glomeruli_min_rad.query() / 2.0) / voxel_xy);
 
     // Morphological operation (opening)
     // Corresponds to only allowing objects > disk_size to be included
@@ -49,7 +52,7 @@ void segmentation2d_klingberg::misa_work() {
     img_tissue << values::set_where(colors::grayscale_float::black(), img_non_tissue_mask);
 
     // Only select glomeruli if the threshold is higher than 75-percentile of kidney tissue
-    double percentile_tissue = statistics::get_percentile_as<double>(img, m_threshold_percentile);
+    double percentile_tissue = statistics::get_percentile_as<double>(img, m_threshold_percentile.query());
 
     //////////////
     // Now working in uint8
@@ -58,7 +61,7 @@ void segmentation2d_klingberg::misa_work() {
     // Threshold the main image
     uchar otsu_threshold = 0;
     images::grayscale8u img_as8u = semantic_convert<images::mask>(img) << binarize::otsu(otsu_threshold);
-    if((otsu_threshold / 255.0) > percentile_tissue * m_threshold_factor ) {
+    if((otsu_threshold / 255.0) > percentile_tissue * m_threshold_factor.query() ) {
 
         // Get rid of non-tissue
         img_as8u << values::set_where(colors::grayscale8u::black(), img_non_tissue_mask);
@@ -72,4 +75,12 @@ void segmentation2d_klingberg::misa_work() {
 
     // Save the mask
     m_output_segmented2d.write(std::move(img_as8u));
+}
+
+void segmentation2d_klingberg::create_parameters(misa_parameter_builder &t_parameters) {
+    m_median_filter_size = t_parameters.create_algorithm_parameter<int>("median-filter-size", 3);
+    m_glomeruli_min_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-min-rad", 15);
+    m_glomeruli_max_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-max-rad", 65);
+    m_threshold_percentile = t_parameters.create_algorithm_parameter<double>("threshold-percentile", 75);
+    m_threshold_factor = t_parameters.create_algorithm_parameter<double>("threshold-factor", 1.5);
 }

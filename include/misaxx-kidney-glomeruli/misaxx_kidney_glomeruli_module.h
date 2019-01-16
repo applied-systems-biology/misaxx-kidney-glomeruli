@@ -21,30 +21,13 @@ namespace misaxx_kidney_glomeruli {
     struct misaxx_kidney_glomeruli_module : public misaxx::misa_module<kidney_glomeruli> {
         using misaxx::misa_module<kidney_glomeruli>::misa_module;
 
-        dispatched <misaxx_tissue::misaxx_tissue_module> dispatch_tissue_detection = future_dispatch(m_tissue_detection);
+        parameter<std::string> m_segmentation2d_algorithm;
+        parameter<std::string> m_segmentation3d_algorithm;
+        parameter<std::string> m_quantification_algorithm;
 
-        dispatched <segmentation2d_base> dispatch_segmentation2d =
-                select_from_algorithm_json_or<segmentation2d_base>("segmentation2d",
-                                                                   "segmentation2d-klingberg", {
-                                                                           future_dispatch<segmentation2d_klingberg>("segmentation2d-klingberg"),
-                                                                           future_dispatch<segmentation2d_local_otsu>("segmentation2d-local_otsu")
-                                                                   }
-                );
+        void create_blueprints(blueprint_list &t_blueprints, parameter_list &t_parameters) override;
 
-        dispatched <segmentation3d_base> dispatch_segmentation3d =
-                select_from_algorithm_json_or<segmentation3d_base>("segmentation3d",
-                                                                   "segmentation3d-klingberg",
-                                                                   {
-                                                                           future_dispatch<segmentation3d_klingberg>("segmentation3d-klingberg")
-                                                                   });
-        dispatched <quantification_base> dispatch_quantification =
-                select_from_algorithm_json_or<quantification_base>("quantification",
-                                                                   "quantification-klingberg", {
-                                                                           future_dispatch<quantification_klingberg>("quantification-klingberg"),
-                                                                           future_dispatch<quantification_constrained_klingberg>("quantification-constrained_klingberg")
-                                                                   });
-
-        void misa_init() override;
+        void build(const blueprint_builder &t_builder) override;
 
     };
 }

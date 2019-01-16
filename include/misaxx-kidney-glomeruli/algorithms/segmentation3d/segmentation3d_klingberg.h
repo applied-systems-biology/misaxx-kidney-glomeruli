@@ -10,11 +10,13 @@
 namespace misaxx_kidney_glomeruli {
     struct segmentation3d_klingberg : public segmentation3d_base {
 
-        double m_max_glomerulus_radius = from_algorithm_json_or<double>("max-glomerulus-radius", 65);
+        parameter<double> m_max_glomerulus_radius;
 
         using segmentation3d_base::segmentation3d_base;
 
-        void misa_work() override;
+        void work() override;
+
+        void create_parameters(misaxx::misa_parameter_builder &t_parameters) override;
 
     };
 }

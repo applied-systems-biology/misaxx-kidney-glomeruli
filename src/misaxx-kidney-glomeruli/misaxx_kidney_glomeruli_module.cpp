@@ -3,28 +3,48 @@
 //
 
 #include <misaxx-kidney-glomeruli/misaxx_kidney_glomeruli_module.h>
+#include <misaxx-tissue/misaxx_tissue_module.h>
 
 using namespace misaxx;
 using namespace coixx;
 using namespace misaxx_kidney_glomeruli;
 
-void misaxx_kidney_glomeruli_module::misa_init() {
+void misaxx_kidney_glomeruli_module::create_blueprints(misa_dispatcher::blueprint_list &t_blueprints,
+                                                       misa_dispatcher::parameter_list &t_parameters) {
 
-    // Load voxel size
-//    std::cout << m_input_autofluorescence.get_ome_metadata()->dumpXML() << std::endl;
+    m_segmentation2d_algorithm = t_parameters.create_algorithm_parameter<std::string>("segmentation2d");
+    m_segmentation3d_algorithm = t_parameters.create_algorithm_parameter<std::string>("segmentation3d");
+    m_quantification_algorithm = t_parameters.create_algorithm_parameter<std::string>("quantification");
+
+    t_blueprints.add(create_submodule_blueprint<misaxx_tissue::misaxx_tissue_module>("tissue", get_module_as<kidney_glomeruli>()->m_tissue));
+    t_blueprints.add(create_blueprint_enum_parameter(m_segmentation2d_algorithm, {
+        create_blueprint<segmentation2d_klingberg>("segmentation2d_klingberg"),
+        create_blueprint<segmentation2d_local_otsu>("segmentation2d_local_otsu")
+    }, "segmentation2d_klingberg"));
+    t_blueprints.add(create_blueprint_enum_parameter(m_segmentation3d_algorithm, {
+            create_blueprint<segmentation3d_klingberg>("segmentation3d_klingberg")
+    }, "segmentation3d_klingberg"));
+    t_blueprints.add(create_blueprint_enum_parameter(m_quantification_algorithm, {
+            create_blueprint<quantification_klingberg>("quantification_klingberg"),
+            create_blueprint<quantification_constrained_klingberg>("quantification_constrained_klingberg")
+    }, "quantification_klingberg"));
+
+}
+
+void misaxx_kidney_glomeruli_module::build(const misa_dispatcher::blueprint_builder &t_builder) {
 
     m_voxel_size = misaxx_ome::misa_ome_voxel_size(*m_input_autofluorescence.get_ome_metadata(),
-            0, misaxx_ome::misa_ome_voxel_size::ome_unit_type::MICROMETER);
+                                                   0, misaxx_ome::misa_ome_voxel_size::ome_unit_type::MICROMETER);
 
     group preprocessing;
-    preprocessing << misa_dispatch(dispatch_tissue_detection);
+    preprocessing << t_builder.build<misaxx_tissue::misaxx_tissue_module>("tissue");
 
     group segmentation2d({{preprocessing}});
 
     for (size_t plane = 0; plane < m_input_autofluorescence.size(); ++plane) {
-        auto &worker = misa_dispatch(dispatch_segmentation2d);
+        auto &worker = t_builder.build<segmentation2d_base>(m_segmentation2d_algorithm.query());
         worker.m_input_autofluoresence = m_input_autofluorescence.at(plane);
-        worker.m_input_tissue = m_tissue_detection.definition().m_output_segmented3d.at(plane);
+        worker.m_input_tissue = m_tissue->m_output_segmented3d.at(plane);
         worker.m_output_segmented2d = m_output_segmented2d.at(plane);
         segmentation2d << worker;
     }
@@ -32,13 +52,13 @@ void misaxx_kidney_glomeruli_module::misa_init() {
     chain work3d({segmentation2d});
 
     {
-        auto &worker = misa_dispatch(dispatch_segmentation3d);
+        auto &worker = t_builder.build<segmentation3d_base>(m_segmentation3d_algorithm.query());
         worker.m_input_segmented2d = m_output_segmented2d;
         worker.m_output_segmented3d = m_output_segmented3d;
         work3d >> worker;
     }
     {
-        auto &worker = misa_dispatch(dispatch_quantification);
+        auto &worker = t_builder.build<quantification_base>(m_quantification_algorithm.query());
         worker.m_input_segmented3d = m_output_segmented3d;
         work3d >> worker;
     }

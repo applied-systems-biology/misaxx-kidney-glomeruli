@@ -10,11 +10,13 @@
 namespace misaxx_kidney_glomeruli {
     struct quantification_klingberg : public quantification_base {
 
-        double  m_glomeruli_min_rad = from_algorithm_json_or<double>("glomeruli-min-rad", 15);
-        double  m_glomeruli_max_rad = from_algorithm_json_or<double>("glomeruli-max-rad", 65);
+        parameter<double>  m_glomeruli_min_rad;
+        parameter<double>  m_glomeruli_max_rad;
 
         using quantification_base::quantification_base;
 
-        void misa_work() override;
+        void work() override;
+
+        void create_parameters(misaxx::misa_parameter_builder &t_parameters) override;
     };
 }

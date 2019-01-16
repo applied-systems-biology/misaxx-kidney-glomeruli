@@ -14,8 +14,10 @@ using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
 using namespace coixx;
 
-void segmentation2d_local_otsu::misa_work() {
+void segmentation2d_local_otsu::work() {
     using namespace coixx::toolbox;
+
+    auto module = get_module_as<kidney_glomeruli>();
 
     images::mask tissue_mask = m_input_tissue.clone();
 
@@ -30,7 +32,7 @@ void segmentation2d_local_otsu::misa_work() {
     images::grayscale_float img_original;
 
     // Smooth & normalize
-    img << values::backup(img_original) << blur::median(m_median_filter_size) << normalize::by_max();
+    img << values::backup(img_original) << blur::median(m_median_filter_size.query()) << normalize::by_max();
 
     // Extracts the blobs
     images::grayscale_float blobs = extract_blobs_log(img);
@@ -46,16 +48,16 @@ void segmentation2d_local_otsu::misa_work() {
 
     // Local maxima selection is expensive (Due to dilation).
     // Instead use a two-step approach that only requires the dilation with the small selection
-    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
-    images::mask blobs_all_maxima = extract_maxima(blobs.clone(), tissue_mask, m_glomeruli_min_rad / voxel_xy);
+    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
+    images::mask blobs_all_maxima = extract_maxima(blobs.clone(), tissue_mask, m_glomeruli_min_rad.query() / voxel_xy);
     blobs_all_maxima << values::set_where_not(colors::mask::background(), cortex_mask);
 
     // We first try to segment large glomeruli to prevent oversegmentation (in combination with deleting already segmented maxima)
-    for(const double radius_microns : { m_glomeruli_max_rad, m_glomeruli_min_rad }) {
+    for(const double radius_microns : { m_glomeruli_max_rad.query(), m_glomeruli_min_rad.query() }) {
         const double radius = radius_microns / voxel_xy;
 
         images::mask blobs_maxima = blobs_all_maxima.clone();
-        if(radius_microns != m_glomeruli_min_rad) {
+        if(radius_microns != m_glomeruli_min_rad.query()) {
             restrict_maxima(blobs_maxima, img, radius);
         }
 
@@ -77,11 +79,13 @@ void segmentation2d_local_otsu::misa_work() {
 
 coixx::images::grayscale_float segmentation2d_local_otsu::extract_blobs_log(const coixx::images::grayscale_float &img) {
 
+    auto module = get_module_as<kidney_glomeruli>();
+
     using namespace coixx::toolbox;
 
-    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
-    const double glomeruli_min_rad_sigma = (m_glomeruli_min_rad / voxel_xy) / sqrt(2);
-    const double glomeruli_max_rad_sigma = (m_glomeruli_max_rad / voxel_xy) / sqrt(2);
+    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
+    const double glomeruli_min_rad_sigma = (m_glomeruli_min_rad.query() / voxel_xy) / sqrt(2);
+    const double glomeruli_max_rad_sigma = (m_glomeruli_max_rad.query() / voxel_xy) / sqrt(2);
     const double avg_rad_sigma = (glomeruli_min_rad_sigma + glomeruli_max_rad_sigma) / 2;
 
     images::grayscale_float log_response = img.clone() << blob::laplacian_of_gaussian(avg_rad_sigma);
@@ -144,10 +148,12 @@ coixx::images::mask
 segmentation2d_local_otsu::find_cortex_otsu_distance_and_dilation(const coixx::images::mask &tissue_mask,
                                                                   const coixx::images::grayscale_float &blobs) {
 
+    auto module = get_module_as<kidney_glomeruli>();
+
     using namespace coixx::toolbox;
 
-    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
-    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad / voxel_xy) * 2);
+    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
+    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad.query() / voxel_xy) * 2);
 
     images::grayscale_float cortex_dist(blobs.get_size(), colors::grayscale_float::black());
     cv::distanceTransform(tissue_mask.get_image(), cortex_dist.get_image(), cv::DIST_L2, 3);
@@ -156,7 +162,7 @@ segmentation2d_local_otsu::find_cortex_otsu_distance_and_dilation(const coixx::i
     images::grayscale8u blobs_thresholded = semantic_convert<images::grayscale8u >(blobs) << binarize::otsu_where(tissue_mask);
 
     // Dilation based method
-    int dilate_diameter = static_cast<int>(glomeruli_max_diameter * 0.1 * m_cortex_segmentation_dilation_group_size);
+    int dilate_diameter = static_cast<int>(glomeruli_max_diameter * 0.1 * m_cortex_segmentation_dilation_group_size.query());
     images::grayscale8u blobs_thresholded_small = resize(blobs_thresholded, 0.1, resize_interpolation::nearest);
     blobs_thresholded_small << morph::dilate(structuring_element::ellipse(dilate_diameter));
 
@@ -193,6 +199,8 @@ segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(con
                                                                              const coixx::images::grayscale32s &local_otsu_mask_components,
                                                                              const int local_otsu_mask_max_component_id,
                                                                              coixx::mutable_recoloring_map<coixx::colors::labels> &blacklist) {
+
+    auto module = get_module_as<kidney_glomeruli>();
 
     using namespace coixx::toolbox;
 
@@ -236,9 +244,9 @@ segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(con
     }
 
     // Blacklist phase
-    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
-    const int glomeruli_min_rad = static_cast<int>(m_glomeruli_min_rad / voxel_xy);
-    const int glomeruli_max_rad = static_cast<int>(m_glomeruli_max_rad / voxel_xy);
+    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
+    const int glomeruli_min_rad = static_cast<int>(m_glomeruli_min_rad.query() / voxel_xy);
+    const int glomeruli_max_rad = static_cast<int>(m_glomeruli_max_rad.query() / voxel_xy);
 
     for(size_t label = 1; label < label_contours.size(); ++label) {
         const auto contour = label_contours[label];
@@ -278,7 +286,7 @@ segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(con
 
 //                    std::cout << "Q = " << isoperimetric_quotient << ", expected Q = " << fitted_isoperimetric_quotient << std::endl;
 
-            if(isoperimetric_quotient < m_isoperimetric_quotient_threshold * fitted_isoperimetric_quotient || isoperimetric_quotient > 1) {
+            if(isoperimetric_quotient < m_isoperimetric_quotient_threshold.query() * fitted_isoperimetric_quotient || isoperimetric_quotient > 1) {
                 blacklist.set_recolor(colors::labels(label), colors::labels::background());
 //                        std::cout << "Blacklist " << label << " failed isoperimetric quotient requirements" << std::endl;
                 continue;
@@ -296,12 +304,13 @@ segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(con
 coixx::images::mask segmentation2d_local_otsu::segment_glomeruli_local_otsu(const coixx::images::mask &blobs_maxima,
                                                                             const coixx::images::mask &cortex_mask,
                                                                             const coixx::images::grayscale_float &img) {
+    auto module = get_module_as<kidney_glomeruli>();
 
     using namespace coixx::toolbox;
 
-    const double voxel_xy = module()->m_voxel_size.get_size_xy().get_value();
-    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad / voxel_xy) * 2);
-    const int glomeruli_search_diameter = glomeruli_max_diameter + m_voronoi_cell_radius_border;
+    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
+    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad.query() / voxel_xy) * 2);
+    const int glomeruli_search_diameter = glomeruli_max_diameter + m_voronoi_cell_radius_border.query();
 
     // Create an area around each maximum
     images::mask local_max_areas_mask = blobs_maxima.clone() << morph::dilate(structuring_element::ellipse(glomeruli_search_diameter));
@@ -358,4 +367,13 @@ coixx::images::mask segmentation2d_local_otsu::segment_glomeruli_local_otsu(cons
 //                                                 voronoi_borders}, img).show_and_wait("local otsu after non-maxima + no border blacklist vis");
 
     return toolbox::mask::from(local_otsu_mask_components);
+}
+
+void segmentation2d_local_otsu::create_parameters(misa_parameter_builder &t_parameters) {
+    m_median_filter_size = t_parameters.create_algorithm_parameter<int>("median-filter-size", 3);
+    m_glomeruli_min_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-min-rad", 15);
+    m_glomeruli_max_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-max-rad", 65);
+    m_cortex_segmentation_dilation_group_size = t_parameters.create_algorithm_parameter<double>("cortex-segmentation-dilation-group-size", 5);
+    m_voronoi_cell_radius_border = t_parameters.create_algorithm_parameter<int>("voronoi-cell-radius-border", 5);
+    m_isoperimetric_quotient_threshold = t_parameters.create_algorithm_parameter<double>("isoperimetric-quotient-threshold", 0.8);
 }

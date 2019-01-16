@@ -79,12 +79,12 @@ namespace {
     }
 }
 
-void segmentation3d_klingberg::misa_work() {
+void segmentation3d_klingberg::work() {
     using namespace coixx::toolbox;
     using recoloring_t = identity_recoloring_hashmap<colors::labels>;
 
-    // The limit on how large a glomerulus in Z-direction can be at most
-    const size_t maximum_layer_count = static_cast<size_t>(m_max_glomerulus_radius);
+    // The limit on how large a glomerulus in Z-direction can be at most (this is actually wrong. should be converted from µm to pixels!)
+    const size_t maximum_layer_count = static_cast<size_t>(m_max_glomerulus_radius.query());
 
     // Layers and their names, as well as the number of already saved layers
     images::grayscale32s layer_last;
@@ -219,4 +219,8 @@ void segmentation3d_klingberg::misa_work() {
         auto rw = output_plane.access_readwrite();
         rw.get() << recoloring::recolor(recoloring);
     }
+}
+
+void segmentation3d_klingberg::create_parameters(misa_parameter_builder &t_parameters) {
+    m_max_glomerulus_radius = t_parameters.create_algorithm_parameter<double>("max-glomerulus-radius", 65);
 }

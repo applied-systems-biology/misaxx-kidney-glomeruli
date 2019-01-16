@@ -5,15 +5,18 @@
 #include <misaxx-kidney-glomeruli/algorithms/quantification/quantification_constrained_klingberg.h>
 #include <misaxx-coixx/objects/label_pixel_count.h>
 #include <misaxx-coixx/toolbox/toolbox_objects.h>
+#include <cmath>
 
 using namespace misaxx;
 using namespace misaxx_ome;
 using namespace misaxx_kidney_glomeruli;
 using namespace coixx;
 
-void quantification_constrained_klingberg::misa_work() {
+void quantification_constrained_klingberg::work() {
+    auto module = get_module_as<kidney_glomeruli>();
 
     glomeruli result;
+    result.location = misa_location(module->m_output_segmented3d);
 
     for(size_t layer_index = 0; layer_index < m_input_segmented3d.size(); ++layer_index) {
 
@@ -31,7 +34,7 @@ void quantification_constrained_klingberg::misa_work() {
             glom.pixels.count += glom_properties.get<label_pixel_count>().pixels;
 
             auto &bb = glom.bounds;
-            const auto &vs = module()->m_voxel_size;
+            const auto &vs = module->m_voxel_size;
             const auto &lbl_minmax = glom_properties.get<label_min_max_position>();
 
             // Count z-layer bounding
@@ -47,17 +50,17 @@ void quantification_constrained_klingberg::misa_work() {
 
     // Calculate the properties of the glomeruli
 
-    const double glomerulus_min_volume = 4.0 / 3.0 * M_PI * pow(m_glomeruli_min_rad, 3);
-    const double glomerulus_max_volume = 4.0 / 3.0 * M_PI * pow(m_glomeruli_max_rad, 3);
-    const double glomerulus_min_diameter = 2 * m_glomeruli_min_rad;
-    const double glomerulus_max_diameter = 2 * m_glomeruli_max_rad;
+    const double glomerulus_min_volume = 4.0 / 3.0 * M_PI * std::pow(m_glomeruli_min_rad.query(), 3);
+    const double glomerulus_max_volume = 4.0 / 3.0 * M_PI * std::pow(m_glomeruli_max_rad.query(), 3);
+    const double glomerulus_min_diameter = 2 * m_glomeruli_min_rad.query();
+    const double glomerulus_max_diameter = 2 * m_glomeruli_max_rad.query();
 
     for(auto &kv : result.data) {
 
         glomerulus &glom = kv.second;
 
         glom.label = kv.first;
-        glom.volume = glom.pixels.get_volume(module()->m_voxel_size);
+        glom.volume = glom.pixels.get_volume(module->m_voxel_size);
         glom.diameter = misa_quantity<double, misa_ome_unit_length<1>>(2 * std::pow(3.0 / 4.0 * glom.volume.get_value() / M_PI, 1.0 / 3.0),
                                                                        misa_ome_unit_length<1>::ome_unit_type::MICROMETER);
 
@@ -79,5 +82,10 @@ void quantification_constrained_klingberg::misa_work() {
         }
     }
 
-    module()->m_output_quantification.attach(std::move(result));
+    module->m_output_quantification.attach(std::move(result));
+}
+
+void quantification_constrained_klingberg::create_parameters(misa_parameter_builder &t_parameters) {
+    m_glomeruli_min_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-min-rad", 15);
+    m_glomeruli_max_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-max-rad", 65);
 }

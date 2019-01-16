@@ -12,12 +12,14 @@ namespace misaxx_kidney_glomeruli {
 
         using segmentation2d_base::segmentation2d_base;
 
-        int m_median_filter_size = from_algorithm_json_or<int>("median-filter-size", 3);
-        double  m_glomeruli_min_rad = from_algorithm_json_or<double>("glomeruli-min-rad", 15);
-        double  m_glomeruli_max_rad = from_algorithm_json_or<double>("glomeruli-max-rad", 65);
-        double m_threshold_percentile = from_algorithm_json_or<double>("threshold-percentile", 75);
-        double m_threshold_factor = from_algorithm_json_or<double>("threshold-factor", 1.5);
+        parameter<int> m_median_filter_size;
+        parameter<double>  m_glomeruli_min_rad;
+        parameter<double>  m_glomeruli_max_rad;
+        parameter<double> m_threshold_percentile;
+        parameter<double> m_threshold_factor;
 
-        void misa_work() override;
+        void work() override;
+
+        void create_parameters(misaxx::misa_parameter_builder &t_parameters) override;
     };
 }
