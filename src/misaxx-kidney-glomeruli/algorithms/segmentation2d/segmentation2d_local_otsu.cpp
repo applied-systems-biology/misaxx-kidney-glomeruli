@@ -2,7 +2,7 @@
 // Created by rgerst on 17.12.18.
 //
 
-#include <misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.h>
+#include "segmentation2d_local_otsu.h"
 #include <misaxx-coixx/toolbox/toolbox_normalize.h>
 #include <misaxx-coixx/toolbox/toolbox_labeling.h>
 #include <misaxx-coixx/toolbox/toolbox_bitwise.h>

@@ -8,16 +8,16 @@ find_package(misaxx-ome REQUIRED)
 add_library(misaxx-kidney-glomeruli
         include/misaxx-kidney-glomeruli/misaxx_kidney_glomeruli_module.h
         include/misaxx-kidney-glomeruli/kidney_glomeruli.h
-        include/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_base.h
-        include/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.h
-        include/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h
-        include/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_base.h
-        include/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.h
-        include/misaxx-kidney-glomeruli/algorithms/quantification/quantification_base.h
-        include/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.h
+        src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_base.h
+        src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.h
+        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h
+        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_base.h
+        src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.h
+        src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_base.h
+        src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.h
         include/misaxx-kidney-glomeruli/attachments/glomerulus.h
         include/misaxx-kidney-glomeruli/attachments/glomeruli.h
-        include/misaxx-kidney-glomeruli/algorithms/quantification/quantification_constrained_klingberg.h
+        src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_constrained_klingberg.h
         src/misaxx-kidney-glomeruli/kidney_glomeruli.cpp
         src/misaxx-kidney-glomeruli/misaxx_kidney_glomeruli_module.cpp
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_constrained_klingberg.cpp

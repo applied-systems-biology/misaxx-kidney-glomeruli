@@ -2,7 +2,7 @@
 // Created by rgerst on 14.12.18.
 //
 
-#include <misaxx-kidney-glomeruli/algorithms/quantification/quantification_constrained_klingberg.h>
+#include "quantification_constrained_klingberg.h"
 #include <misaxx-coixx/objects/label_pixel_count.h>
 #include <misaxx-coixx/toolbox/toolbox_objects.h>
 #include <cmath>

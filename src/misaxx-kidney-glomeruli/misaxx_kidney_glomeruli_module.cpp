@@ -4,6 +4,11 @@
 
 #include <misaxx-kidney-glomeruli/misaxx_kidney_glomeruli_module.h>
 #include <misaxx-tissue/misaxx_tissue_module.h>
+#include "algorithms/segmentation2d/segmentation2d_klingberg.h"
+#include "algorithms/segmentation2d/segmentation2d_local_otsu.h"
+#include "algorithms/segmentation3d/segmentation3d_klingberg.h"
+#include "algorithms/quantification/quantification_klingberg.h"
+#include "algorithms/quantification/quantification_constrained_klingberg.h"
 
 using namespace misaxx;
 using namespace coixx;
