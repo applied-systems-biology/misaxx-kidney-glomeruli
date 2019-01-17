@@ -222,5 +222,6 @@ void segmentation3d_klingberg::work() {
 }
 
 void segmentation3d_klingberg::create_parameters(misa_parameter_builder &t_parameters) {
+    segmentation3d_base::create_parameters(t_parameters);
     m_max_glomerulus_radius = t_parameters.create_algorithm_parameter<double>("max-glomerulus-radius", 65);
 }

@@ -370,6 +370,7 @@ coixx::images::mask segmentation2d_local_otsu::segment_glomeruli_local_otsu(cons
 }
 
 void segmentation2d_local_otsu::create_parameters(misa_parameter_builder &t_parameters) {
+    segmentation2d_base::create_parameters(t_parameters);
     m_median_filter_size = t_parameters.create_algorithm_parameter<int>("median-filter-size", 3);
     m_glomeruli_min_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-min-rad", 15);
     m_glomeruli_max_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-max-rad", 65);

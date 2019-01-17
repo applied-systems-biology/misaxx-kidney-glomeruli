@@ -54,6 +54,7 @@ void quantification_klingberg::work() {
 }
 
 void quantification_klingberg::create_parameters(misa_parameter_builder &t_parameters) {
+    quantification_base::create_parameters(t_parameters);
     m_glomeruli_min_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-min-rad", 15);
     m_glomeruli_max_rad = t_parameters.create_algorithm_parameter<double>("glomeruli-max-rad", 65);
 }
