@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <misaxx-helpers/string.h>
 #include <misaxx/attachments/misa_locatable.h>
 #include <misaxx/attachments/misa_labeled_object_location.h>
 #include <misaxx-kidney-glomeruli/attachments/glomerulus.h>

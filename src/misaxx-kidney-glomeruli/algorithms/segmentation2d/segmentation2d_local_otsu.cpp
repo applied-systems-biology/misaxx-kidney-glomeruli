@@ -3,12 +3,12 @@
 //
 
 #include "segmentation2d_local_otsu.h"
-#include <misaxx-coixx/toolbox/toolbox_normalize.h>
-#include <misaxx-coixx/toolbox/toolbox_labeling.h>
-#include <misaxx-coixx/toolbox/toolbox_bitwise.h>
-#include <misaxx-coixx/toolbox/toolbox_resize.h>
-#include <misaxx-coixx/toolbox/toolbox_recoloring.h>
-#include <misaxx-coixx/toolbox/toolbox_mask.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_normalize.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_labeling.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_bitwise.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_resize.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_recoloring.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_mask.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <misaxx-coixx/objects/label_min_max_position.h>
+#include <misaxx-imaging/coixx/objects/label_min_max_position.h>
 #include "quantification_base.h"
 
 namespace misaxx_kidney_glomeruli {

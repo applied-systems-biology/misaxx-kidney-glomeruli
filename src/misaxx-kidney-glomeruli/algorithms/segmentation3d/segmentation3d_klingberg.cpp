@@ -2,15 +2,14 @@
 // Created by rgerst on 17.12.18.
 //
 
-#include <misaxx-coixx/toolbox/toolbox_labeling.h>
-#include <misaxx-coixx/recoloring_map.h>
-#include <misaxx-coixx/toolbox/toolbox_recoloring.h>
-#include <misaxx-helpers/unordered_set_components.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_labeling.h>
+#include <misaxx-imaging/coixx/recoloring_map.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_recoloring.h>
 #include "segmentation3d_klingberg.h"
 #include <lemon/list_graph.h>
 #include <lemon/connectivity.h>
-#include <misaxx-coixx/toolbox/toolbox_objects.h>
-#include <misaxx-coixx/objects/label_dummy_property.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_objects.h>
+#include <misaxx-imaging/coixx/objects/label_dummy_property.h>
 #include <utility>
 #include <unordered_set>
 

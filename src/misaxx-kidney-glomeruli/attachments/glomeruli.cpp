@@ -3,6 +3,7 @@
 //
 
 #include <misaxx-kidney-glomeruli/attachments/glomeruli.h>
+#include <misaxx/utils/string.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
@@ -15,7 +16,7 @@ void glomeruli::from_json(const nlohmann::json &t_json) {
 void glomeruli::to_json(nlohmann::json &t_json) const {
     misaxx::misa_locatable<misaxx::misa_location>::to_json(t_json);
     for(const auto &kv : data) {
-        kv.second.to_json(t_json["data"][cxxh::to_string(kv.first)]);
+        kv.second.to_json(t_json["data"][misaxx::utils::to_string(kv.first)]);
     }
 }
 

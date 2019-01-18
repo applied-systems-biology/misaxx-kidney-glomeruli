@@ -3,8 +3,8 @@
 //
 
 #include "quantification_klingberg.h"
-#include <misaxx-coixx/objects/label_pixel_count.h>
-#include <misaxx-coixx/toolbox/toolbox_objects.h>
+#include <misaxx-imaging/coixx/objects/label_pixel_count.h>
+#include <misaxx-imaging/coixx/toolbox/toolbox_objects.h>
 #include <cmath>
 
 using namespace misaxx;
