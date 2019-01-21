@@ -3,7 +3,7 @@
 //
 
 #include <misaxx-kidney-glomeruli/attachments/glomeruli.h>
-#include <misaxx/utils/string.h>
+#include <misaxx/core/utils/string.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;

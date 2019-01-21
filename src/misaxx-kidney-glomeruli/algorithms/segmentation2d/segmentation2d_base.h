@@ -5,17 +5,17 @@
 
 #pragma once
 
-#include <misaxx/misa_task.h>
-#include <misaxx-kidney-glomeruli/kidney_glomeruli.h>
-#include <misaxx-ome/accessors/misa_ome_plane.h>
-#include <misaxx-imaging/coixx/image.h>
+#include <misaxx/core/misa_task.h>
+#include <misaxx-kidney-glomeruli/module_interface.h>
+#include <misaxx/ome/accessors/misa_ome_plane.h>
+#include <misaxx/imaging/coixx/image.h>
 
 namespace misaxx_kidney_glomeruli {
     struct segmentation2d_base : public misaxx::misa_task {
 
-        misaxx_ome::misa_ome_plane<coixx::images::mask> m_input_tissue;
-        misaxx_ome::misa_ome_plane<coixx::images::grayscale_float> m_input_autofluoresence;
-        misaxx_ome::misa_ome_plane<coixx::images::mask> m_output_segmented2d;
+        misaxx::ome::misa_ome_plane<coixx::images::mask> m_input_tissue;
+        misaxx::ome::misa_ome_plane<coixx::images::grayscale_float> m_input_autofluoresence;
+        misaxx::ome::misa_ome_plane<coixx::images::mask> m_output_segmented2d;
 
         using misaxx::misa_task::misa_task;
 

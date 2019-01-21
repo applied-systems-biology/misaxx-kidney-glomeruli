@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <misaxx/misa_serializeable.h>
-#include <misaxx-ome/attachments/misa_ome_voxel.h>
-#include <misaxx-ome/attachments/misa_ome_pixel_count.h>
-#include <misaxx/attachments/misa_locatable.h>
-#include <misaxx/attachments/misa_labeled_object_location.h>
+#include <misaxx/core/misa_serializeable.h>
+#include <misaxx/ome/attachments/misa_ome_voxel.h>
+#include <misaxx/ome/attachments/misa_ome_pixel_count.h>
+#include <misaxx/core/attachments/misa_locatable.h>
+#include <misaxx/core/attachments/misa_labeled_object_location.h>
 
 namespace misaxx_kidney_glomeruli {
 
@@ -17,19 +17,19 @@ namespace misaxx_kidney_glomeruli {
         /**
          * Number of pixels
          */
-        misaxx_ome::misa_ome_pixel_count pixels;
+        misaxx::ome::misa_ome_pixel_count pixels;
         /**
          * Volume of the glomerulus
          */
-        misaxx::misa_quantity<double, misaxx_ome::misa_ome_unit_length<3>> volume;
+        misaxx::misa_quantity<double, misaxx::ome::misa_ome_unit_length<3>> volume;
         /**
          * Diameter of the glomerulus
          */
-        misaxx::misa_quantity<double, misaxx_ome::misa_ome_unit_length<1>> diameter;
+        misaxx::misa_quantity<double, misaxx::ome::misa_ome_unit_length<1>> diameter;
         /**
          * Bounding box of the glomerulus
          */
-        misaxx_ome::misa_ome_voxel bounds;
+        misaxx::ome::misa_ome_voxel bounds;
         /**
          * Label in the labeling output
          */

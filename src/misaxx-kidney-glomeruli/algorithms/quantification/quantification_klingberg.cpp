@@ -3,17 +3,17 @@
 //
 
 #include "quantification_klingberg.h"
-#include <misaxx-imaging/coixx/objects/label_pixel_count.h>
-#include <misaxx-imaging/coixx/toolbox/toolbox_objects.h>
+#include <misaxx/imaging/coixx/objects/label_pixel_count.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_objects.h>
 #include <cmath>
 
 using namespace misaxx;
-using namespace misaxx_ome;
+using namespace misaxx::ome;
 using namespace misaxx_kidney_glomeruli;
 using namespace coixx;
 
 void quantification_klingberg::work() {
-    auto module = get_module_as<kidney_glomeruli>();
+    auto module = get_module_as<module_interface>();
 
     glomeruli result;
     result.location = misa_location(module->m_output_segmented3d);

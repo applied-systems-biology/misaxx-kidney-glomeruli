@@ -5,13 +5,13 @@
 
 #pragma once
 
-#include <misaxx/misa_module.h>
-#include "kidney_glomeruli.h"
+#include <misaxx/core/misa_module.h>
+#include "module_interface.h"
 
 namespace misaxx_kidney_glomeruli {
 
-    struct misaxx_kidney_glomeruli_module : public misaxx::misa_module<kidney_glomeruli> {
-        using misaxx::misa_module<kidney_glomeruli>::misa_module;
+    struct module : public misaxx::misa_module<module_interface> {
+        using misaxx::misa_module<module_interface>::misa_module;
 
         parameter<std::string> m_segmentation2d_algorithm;
         parameter<std::string> m_segmentation3d_algorithm;

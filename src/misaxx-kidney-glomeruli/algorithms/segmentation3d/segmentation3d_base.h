@@ -5,15 +5,15 @@
 
 #pragma once
 
-#include <misaxx-kidney-glomeruli/kidney_glomeruli.h>
-#include <misaxx/misa_task.h>
-#include <misaxx-imaging/coixx/image.h>
+#include <misaxx-kidney-glomeruli/module_interface.h>
+#include <misaxx/core/misa_task.h>
+#include <misaxx/imaging/coixx/image.h>
 
 namespace misaxx_kidney_glomeruli {
     struct segmentation3d_base : public misaxx::misa_task {
 
-        misaxx_ome::misa_ome_tiff<coixx::images::mask> m_input_segmented2d;
-        misaxx_ome::misa_ome_tiff<coixx::images::labels> m_output_segmented3d;
+        misaxx::ome::misa_ome_tiff<coixx::images::mask> m_input_segmented2d;
+        misaxx::ome::misa_ome_tiff<coixx::images::labels> m_output_segmented3d;
 
         using misaxx::misa_task::misa_task;
 

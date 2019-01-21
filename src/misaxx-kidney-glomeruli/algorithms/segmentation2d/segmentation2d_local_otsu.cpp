@@ -3,12 +3,12 @@
 //
 
 #include "segmentation2d_local_otsu.h"
-#include <misaxx-imaging/coixx/toolbox/toolbox_normalize.h>
-#include <misaxx-imaging/coixx/toolbox/toolbox_labeling.h>
-#include <misaxx-imaging/coixx/toolbox/toolbox_bitwise.h>
-#include <misaxx-imaging/coixx/toolbox/toolbox_resize.h>
-#include <misaxx-imaging/coixx/toolbox/toolbox_recoloring.h>
-#include <misaxx-imaging/coixx/toolbox/toolbox_mask.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_normalize.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_labeling.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_bitwise.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_resize.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_recoloring.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_mask.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
@@ -17,7 +17,7 @@ using namespace coixx;
 void segmentation2d_local_otsu::work() {
     using namespace coixx::toolbox;
 
-    auto module = get_module_as<kidney_glomeruli>();
+    auto module = get_module_as<module_interface>();
 
     images::mask tissue_mask = m_input_tissue.clone();
 
@@ -79,7 +79,7 @@ void segmentation2d_local_otsu::work() {
 
 coixx::images::grayscale_float segmentation2d_local_otsu::extract_blobs_log(const coixx::images::grayscale_float &img) {
 
-    auto module = get_module_as<kidney_glomeruli>();
+    auto module = get_module_as<module_interface>();
 
     using namespace coixx::toolbox;
 
@@ -148,7 +148,7 @@ coixx::images::mask
 segmentation2d_local_otsu::find_cortex_otsu_distance_and_dilation(const coixx::images::mask &tissue_mask,
                                                                   const coixx::images::grayscale_float &blobs) {
 
-    auto module = get_module_as<kidney_glomeruli>();
+    auto module = get_module_as<module_interface>();
 
     using namespace coixx::toolbox;
 
@@ -200,7 +200,7 @@ segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(con
                                                                              const int local_otsu_mask_max_component_id,
                                                                              coixx::mutable_recoloring_map<coixx::colors::labels> &blacklist) {
 
-    auto module = get_module_as<kidney_glomeruli>();
+    auto module = get_module_as<module_interface>();
 
     using namespace coixx::toolbox;
 
@@ -304,7 +304,7 @@ segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(con
 coixx::images::mask segmentation2d_local_otsu::segment_glomeruli_local_otsu(const coixx::images::mask &blobs_maxima,
                                                                             const coixx::images::mask &cortex_mask,
                                                                             const coixx::images::grayscale_float &img) {
-    auto module = get_module_as<kidney_glomeruli>();
+    auto module = get_module_as<module_interface>();
 
     using namespace coixx::toolbox;
 

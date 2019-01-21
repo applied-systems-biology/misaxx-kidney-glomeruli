@@ -3,11 +3,11 @@
 //
 
 #include "segmentation2d_klingberg.h"
-#include <misaxx-imaging/coixx/toolbox/toolbox_statistics.h>
-#include <misaxx-imaging/coixx/toolbox/toolbox_blur.h>
-#include <misaxx-imaging/coixx/toolbox/toolbox_normalize.h>
-#include <misaxx-imaging/coixx/toolbox/toolbox_morph.h>
-#include <misaxx-imaging/coixx/structuring_element.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_statistics.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_blur.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_normalize.h>
+#include <misaxx/imaging/coixx/toolbox/toolbox_morph.h>
+#include <misaxx/imaging/coixx/structuring_element.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
@@ -17,7 +17,7 @@ void segmentation2d_klingberg::work() {
 
     auto pam = is_parallelizeable_parameter;
 
-    auto module = get_module_as<kidney_glomeruli>();
+    auto module = get_module_as<module_interface>();
 
     using namespace coixx::toolbox;
 

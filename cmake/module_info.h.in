@@ -1,6 +1,6 @@
 #pragma once
-#include <misaxx/misa_mutable_module_info.h>
-#include <misaxx/module_info.h>
+#include <misaxx/core/misa_mutable_module_info.h>
+#include <misaxx/core/module_info.h>
 #include <misaxx-tissue/module_info.h>
 
 namespace misaxx_kidney_glomeruli {
