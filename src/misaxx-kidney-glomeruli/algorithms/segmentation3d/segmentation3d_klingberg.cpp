@@ -140,12 +140,12 @@ void segmentation3d_klingberg::work() {
         std::unordered_set<int> new_nodes;
         std::unordered_set<std::pair<int, int>, boost::hash<std::pair<int, int>>> edges;
 
-        for(int i = 0; i < layer_last.get_image().rows; ++i) {
+        for(int i = 0; i < layer_last.get_mat().rows; ++i) {
 
             const colors::labels *row_layer_last = layer_last.row_ptr(i);
             const colors::labels *row_layer_current = img_labels.row_ptr(i);
 
-            for(int j = 0; j < layer_last.get_image().cols; ++j) {
+            for(int j = 0; j < layer_last.get_mat().cols; ++j) {
 
                 const int group = row_layer_current[j]; // The object in the current layer
                 const int bottom_group = row_layer_last[j]; // The object in the last layer

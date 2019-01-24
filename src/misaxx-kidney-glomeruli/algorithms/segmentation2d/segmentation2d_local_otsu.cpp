@@ -93,9 +93,9 @@ coixx::images::grayscale_float segmentation2d_local_otsu::extract_blobs_log(cons
     // Manual postprocessing for increased speed:
     // Takes only the negative response and normalizes against the lowest response (where the blobs are)
     float min_response = statistics::min(log_response);
-    for(int y = 0; y < img.get_image().rows; ++y) {
+    for(int y = 0; y < img.get_mat().rows; ++y) {
         colors::grayscale_float *row = log_response.row_ptr(y);
-        for(int x = 0; x < img.get_image().cols; ++x) {
+        for(int x = 0; x < img.get_mat().cols; ++x) {
             row[x].value = std::min(0.0f, row[x].value) / min_response;
         }
     }
@@ -136,7 +136,7 @@ segmentation2d_local_otsu::restrict_maxima(coixx::images::mask &t_maxima, const 
                 const auto px2 = pixels[j];
                 const double l = pow(px.x - px2.x, 2) + pow(px.y - px2.y, 2);
                 if(l <= r_sq && px2.value >= px.value) {
-                    t_maxima.get_image().at<uchar>(cv::Point(px.x, px.y)) = 0; // Get rid of the maximum
+                    t_maxima.get_mat().at<uchar>(cv::Point(px.x, px.y)) = 0; // Get rid of the maximum
                     break;
                 }
             }
@@ -156,7 +156,7 @@ segmentation2d_local_otsu::find_cortex_otsu_distance_and_dilation(const coixx::i
     const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad.query() / voxel_xy) * 2);
 
     images::grayscale_float cortex_dist(blobs.get_size(), colors::grayscale_float::black());
-    cv::distanceTransform(tissue_mask.get_image(), cortex_dist.get_image(), cv::DIST_L2, 3);
+    cv::distanceTransform(tissue_mask.get_mat(), cortex_dist.get_mat(), cv::DIST_L2, 3);
 
     // Apply otsu
     images::grayscale8u blobs_thresholded = semantic_convert<images::grayscale8u >(blobs) << binarize::otsu_where(tissue_mask);
@@ -180,10 +180,10 @@ segmentation2d_local_otsu::find_cortex_otsu_distance_and_dilation(const coixx::i
     // Options: Maximum (works well in test images, BUT outliers disturb it!)
     // Alternative: 2 * mean (seems to work)
 //            float dist_max = toolbox(cortex_dist_candidates).max();
-    images::mask cortex_dist_candidates_nonzero(cortex_dist_candidates.get_image() > 0);
+    images::mask cortex_dist_candidates_nonzero(cortex_dist_candidates.get_mat() > 0);
     double dist = statistics::get_mean_where(cortex_dist_candidates, cortex_dist_candidates_nonzero) * 2;
 
-    images::mask cortex(cortex_dist.get_image() <= dist);
+    images::mask cortex(cortex_dist.get_mat() <= dist);
 
     // Combine both
     cortex << values::set_where(colors::mask(255), cortex_by_dilation);
@@ -209,18 +209,18 @@ segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(con
 
     // Detect the contours
     std::vector<std::vector<cv::Point>> contours;
-    cv::findContours(local_otsu_mask.get_image(), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    cv::findContours(local_otsu_mask.get_mat(), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
 
     // Find the center for each label
     std::vector<cv::Point> label_centers;
     label_centers.resize(static_cast<size_t>(local_otsu_mask_max_component_id) + 1, cv::Point(-1, -1));
 
-    for(int y = 0; y < local_otsu_mask_components.get_image().rows; ++y) {
+    for(int y = 0; y < local_otsu_mask_components.get_mat().rows; ++y) {
 
         const colors::mask * row_maxima = blobs_maxima_mask.row_ptr(y);
         const colors::labels * row_components = local_otsu_mask_components.row_ptr(y);
 
-        for(int x = 0; x < local_otsu_mask_components.get_image().cols; ++x) {
+        for(int x = 0; x < local_otsu_mask_components.get_mat().cols; ++x) {
             if(row_maxima[x] > 0 && row_components[x] > 0) {
                 label_centers[row_components[x]] = cv::Point(x, y);
             }
@@ -320,9 +320,9 @@ coixx::images::mask segmentation2d_local_otsu::segment_glomeruli_local_otsu(cons
     images::grayscale_float local_areas_voronoi_distance(img.get_size(), colors::grayscale_float::black());
     images::grayscale8u local_areas_voronoi_centers = blobs_maxima.clone() << values::invert();
     images::grayscale32s local_areas_voronoi_labels(img.get_size(), colors::labels::background());
-    cv::distanceTransform(local_areas_voronoi_centers.get_image(),
-                          local_areas_voronoi_distance.get_image(),
-                          local_areas_voronoi_labels.get_image(),
+    cv::distanceTransform(local_areas_voronoi_centers.get_mat(),
+                          local_areas_voronoi_distance.get_mat(),
+                          local_areas_voronoi_labels.get_mat(),
                           cv::DIST_L2,
                           3);
 
@@ -338,7 +338,7 @@ coixx::images::mask segmentation2d_local_otsu::segment_glomeruli_local_otsu(cons
     // Slice the glomeruli by the voronoi borders
     local_areas_voronoi_labels << edge::laplacian();
 
-    images::mask voronoi_borders(local_areas_voronoi_labels.get_image() != 0);
+    images::mask voronoi_borders(local_areas_voronoi_labels.get_mat() != 0);
     local_otsu_mask << values::set_where(colors::mask::background(), voronoi_borders);
 
     // Blacklist phase: Get rid of everything we don't want
