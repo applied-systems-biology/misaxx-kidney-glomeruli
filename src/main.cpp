@@ -6,6 +6,12 @@ using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
 
 int main(int argc, const char** argv) {
-    misa_cli<module> cli(misaxx_kidney_glomeruli::module_info());
-    return cli.prepare_and_run(argc, argv);
+    try {
+        misa_cli<module> cli(misaxx_kidney_glomeruli::module_info());
+        return cli.prepare_and_run(argc, argv);
+    }
+    catch(std::runtime_error e) {
+        std::cout << e.what() << std::endl;
+        return 1;
+    }
 }
