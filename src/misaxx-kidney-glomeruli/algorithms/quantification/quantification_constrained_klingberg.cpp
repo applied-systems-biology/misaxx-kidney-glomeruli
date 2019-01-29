@@ -3,48 +3,66 @@
 //
 
 #include "quantification_constrained_klingberg.h"
-#include <misaxx/imaging/coixx/objects/label_pixel_count.h>
-#include <misaxx/imaging/coixx/toolbox/toolbox_objects.h>
 #include <cmath>
+#include <cv-toolbox/ReadableBMatTypes.h>
+#include <cv-toolbox/label_properties.h>
 
 using namespace misaxx;
 using namespace misaxx::ome;
 using namespace misaxx_kidney_glomeruli;
-using namespace coixx;
+
+namespace {
+    
+    /**
+     * Properties collected for labeling
+     */
+    struct cc_properties {
+        size_t pixels = 0;
+        int min_x = std::numeric_limits<int>::max();
+        int max_x = std::numeric_limits<int>::lowest();
+        int min_y = std::numeric_limits<int>::max();
+        int max_y = std::numeric_limits<int>::lowest();
+        
+        void update(int x, int y, int label) {
+            ++pixels;
+            min_x = std::min(min_x, x);
+            min_y = std::min(min_y, y);
+            max_x = std::max(max_x, x);
+            max_y = std::max(max_y, y);
+        }
+    };
+    
+}
 
 void quantification_constrained_klingberg::work() {
     auto module = get_module_as<module_interface>();
 
     glomeruli result;
-    result.location = misa_location(module->m_output_segmented3d);
 
     for(size_t layer_index = 0; layer_index < m_input_segmented3d.size(); ++layer_index) {
 
-        images::grayscale32s img_components = m_input_segmented3d.at(layer_index).clone();
+        cv::images::labels img_components { m_input_segmented3d.at(layer_index).clone() };
+        cv::label_properties<cc_properties> component_properties(img_components);
 
-        using namespace coixx::toolbox;
-        objects::label_properties<label_pixel_count, label_min_max_position> component_properties(img_components);
-
-        for(const auto& [group, glom_properties] : component_properties) {
+        for(const auto& [group, glom_properties] : component_properties.rows) {
 
             if(group == 0)
                 continue;
 
             glomerulus &glom = result.data[group];
-            glom.pixels.count += glom_properties.get<label_pixel_count>().pixels;
+            glom.pixels.count += glom_properties.pixels;
 
             auto &bb = glom.bounds;
             const auto &vs = module->m_voxel_size;
-            const auto &lbl_minmax = glom_properties.get<label_min_max_position>();
 
             // Count z-layer bounding
             bb.include_z(vs.get_size_z().make(layer_index));
 
             // Count the bounding
-            bb.include_x(vs.get_size_x().make(lbl_minmax.min_x));
-            bb.include_x(vs.get_size_x().make(lbl_minmax.max_x));
-            bb.include_y(vs.get_size_y().make(lbl_minmax.min_y));
-            bb.include_y(vs.get_size_y().make(lbl_minmax.max_y));
+            bb.include_x(vs.get_size_x().make(glom_properties.min_x));
+            bb.include_x(vs.get_size_x().make(glom_properties.max_x));
+            bb.include_y(vs.get_size_y().make(glom_properties.min_y));
+            bb.include_y(vs.get_size_y().make(glom_properties.max_y));
         }
     }
 
@@ -57,7 +75,7 @@ void quantification_constrained_klingberg::work() {
 
     for(auto &kv : result.data) {
 
-        glomerulus &glom = kv.second;
+        glomerulus &glom = kv.second; // TODO: Set location of glomerulus
 
         glom.label = kv.first;
         glom.volume = glom.pixels.get_volume(module->m_voxel_size);
@@ -82,7 +100,7 @@ void quantification_constrained_klingberg::work() {
         }
     }
 
-    module->m_output_quantification.attach(std::move(result));
+    module->m_output_quantification.attach_foreign(std::move(result), module->m_output_segmented3d);
 }
 
 void quantification_constrained_klingberg::create_parameters(misa_parameter_builder &t_parameters) {

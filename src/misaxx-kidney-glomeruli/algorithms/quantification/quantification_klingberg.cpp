@@ -3,36 +3,48 @@
 //
 
 #include "quantification_klingberg.h"
-#include <misaxx/imaging/coixx/objects/label_pixel_count.h>
-#include <misaxx/imaging/coixx/toolbox/toolbox_objects.h>
 #include <cmath>
+#include <cv-toolbox/ReadableBMatTypes.h>
+#include <cv-toolbox/label_properties.h>
 
 using namespace misaxx;
 using namespace misaxx::ome;
 using namespace misaxx_kidney_glomeruli;
-using namespace coixx;
+
+
+namespace {
+
+    /**
+     * Properties collected for labeling
+     */
+    struct cc_properties {
+        size_t pixels = 0;
+
+        void update(int x, int y, int label) {
+            ++pixels;
+        }
+    };
+
+}
+
 
 void quantification_klingberg::work() {
     auto module = get_module_as<module_interface>();
 
     glomeruli result;
-    result.location = misa_location(module->m_output_segmented3d);
 
     for(const auto &plane : m_input_segmented3d) {
         auto access = plane.access_readonly();
 
-        using namespace coixx::toolbox;
+        cv::label_properties<cc_properties> component_properties(cv::images::labels { access.get() });
 
-        objects::label_properties<label_pixel_count> component_properties(access.get());
-
-        for(const auto& [group, glom_properties] : component_properties) {
+        for(const auto& [group, glom_properties] : component_properties.rows) {
 
             if(group == 0)
                 continue;
 
-            glomerulus glom;
-            glom.location = misa_labeled_object_location(module->m_output_segmented3d, group);
-            glom.pixels.count += glom_properties.get<label_pixel_count>().pixels;
+            glomerulus glom; // TODO: Set location of glomerulus
+            glom.pixels.count += glom_properties.pixels;
             result.data[group] = std::move(glom);
         }
     }
@@ -50,7 +62,7 @@ void quantification_klingberg::work() {
         glom.valid = glom.volume.get_value() >= glomerulus_min_volume && glom.volume.get_value() <= glomerulus_max_volume;
     }
 
-    module->m_output_quantification.attach(std::move(result));
+    module->m_output_quantification.attach_foreign(std::move(result), module->m_output_segmented3d);
 }
 
 void quantification_klingberg::create_parameters(misa_parameter_builder &t_parameters) {

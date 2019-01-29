@@ -11,7 +11,7 @@
 
 namespace misaxx_kidney_glomeruli {
 
-    struct glomeruli : public misaxx::misa_locatable<misaxx::misa_location> {
+    struct glomeruli : public misaxx::misa_locatable {
         std::unordered_map<int, glomerulus> data;
 
         void from_json(const nlohmann::json &t_json) override;

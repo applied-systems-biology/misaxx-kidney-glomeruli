@@ -12,7 +12,7 @@
 namespace misaxx_kidney_glomeruli {
     struct quantification_base : public misaxx::misa_task {
 
-        misaxx::ome::misa_ome_tiff<coixx::images::labels> m_input_segmented3d;
+        misaxx::ome::misa_ome_tiff m_input_segmented3d;
 
         using misaxx::misa_task::misa_task;
     };

@@ -11,16 +11,15 @@
 #include <misaxx-kidney-glomeruli/attachments/glomeruli.h>
 #include <misaxx-tissue/module_interface.h>
 #include <misaxx/ome/attachments/misa_ome_voxel_size.h>
-#include <misaxx/imaging/coixx/image.h>
 
 using namespace coixx;
 
 namespace misaxx_kidney_glomeruli {
     struct module_interface : public misaxx::misa_module_interface {
 
-        misaxx::ome::misa_ome_tiff<coixx::images::grayscale_float> m_input_autofluorescence;
-        misaxx::ome::misa_ome_tiff<coixx::images::mask> m_output_segmented2d;
-        misaxx::ome::misa_ome_tiff<coixx::images::labels > m_output_segmented3d;
+        misaxx::ome::misa_ome_tiff m_input_autofluorescence;
+        misaxx::ome::misa_ome_tiff m_output_segmented2d;
+        misaxx::ome::misa_ome_tiff m_output_segmented3d;
         misaxx::misa_exported_attachments m_output_quantification;
 
         /**

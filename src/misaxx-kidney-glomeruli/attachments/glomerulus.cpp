@@ -8,7 +8,7 @@ using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
 
 void glomerulus::from_json(const nlohmann::json &j) {
-    misa_locatable<misa_labeled_object_location>::from_json(j);
+    misa_locatable::from_json(j);
     pixels.from_json(j["pixels"]);
     volume.from_json(j["volume"]);
     diameter.from_json(j["diameter"]);
@@ -18,8 +18,7 @@ void glomerulus::from_json(const nlohmann::json &j) {
 }
 
 void glomerulus::to_json(nlohmann::json &j) const {
-    misa_locatable<misa_labeled_object_location>::to_json(j);
-    misa_serializeable::to_json(j);
+    misa_locatable::to_json(j);
     pixels.to_json(j["pixels"]);
     volume.to_json(j["volume"]);
     diameter.to_json(j["diameter"]);
@@ -29,7 +28,7 @@ void glomerulus::to_json(nlohmann::json &j) const {
 }
 
 void glomerulus::to_json_schema(const misaxx::misa_json_schema &t_schema) const {
-    misa_locatable<misa_labeled_object_location>::to_json_schema(t_schema);
+    misa_locatable::to_json_schema(t_schema);
     pixels.to_json_schema(t_schema.resolve("pixels"));
     volume.to_json_schema(t_schema.resolve("volume"));
     diameter.to_json_schema(t_schema.resolve("diameter"));
@@ -39,6 +38,6 @@ void glomerulus::to_json_schema(const misaxx::misa_json_schema &t_schema) const 
 }
 
 void glomerulus::build_serialization_id_hierarchy(std::vector<misaxx::misa_serialization_id> &result) const {
-    misa_locatable<misa_labeled_object_location>::build_serialization_id_hierarchy(result);
+    misa_locatable::build_serialization_id_hierarchy(result);
     result.emplace_back(misaxx::misa_serialization_id("misa_kidney_glomeruli", "attachments/glomerulus"));
 }
