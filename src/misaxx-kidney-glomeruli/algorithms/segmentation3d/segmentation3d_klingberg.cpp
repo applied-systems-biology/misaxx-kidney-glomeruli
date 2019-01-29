@@ -2,16 +2,12 @@
 // Created by rgerst on 17.12.18.
 //
 
-#include <misaxx/imaging/coixx/toolbox/toolbox_labeling.h>
-#include <misaxx/imaging/coixx/recoloring_map.h>
-#include <misaxx/imaging/coixx/toolbox/toolbox_recoloring.h>
 #include "segmentation3d_klingberg.h"
 #include <lemon/list_graph.h>
 #include <lemon/connectivity.h>
-#include <misaxx/imaging/coixx/toolbox/toolbox_objects.h>
-#include <misaxx/imaging/coixx/objects/label_dummy_property.h>
 #include <utility>
 #include <unordered_set>
+#include <cv-toolbox/ReadableBMatTypes.h>
 
 using namespace misaxx;
 using namespace coixx;
@@ -35,6 +31,12 @@ struct node_weight {
      * Height of the current object
      */
     size_t height = 0;
+};
+
+struct cc_properties {
+    void update(int x, int y, int label) {
+
+    }
 };
 
 namespace {
@@ -79,14 +81,12 @@ namespace {
 }
 
 void segmentation3d_klingberg::work() {
-    using namespace coixx::toolbox;
-    using recoloring_t = identity_recoloring_hashmap<colors::labels>;
 
     // The limit on how large a glomerulus in Z-direction can be at most (this is actually wrong. should be converted from µm to pixels!)
     const size_t maximum_layer_count = static_cast<size_t>(m_max_glomerulus_radius.query());
 
     // Layers and their names, as well as the number of already saved layers
-    images::grayscale32s layer_last;
+    cv::images::grayscale32s layer_last;
 
     // Graph where a node consists of (layer_index, label) and edges represent that
     // two nodes should be assigned to the same final label
@@ -105,11 +105,11 @@ void segmentation3d_klingberg::work() {
 
         // Label the 2D segmented object masks
         int img_labels_max_component = 0;
-        layer_last = labeling::connected_components(input_plane.access_readonly().get(), img_labels_max_component);
+        cv::connectedComponents(input_plane.access_readonly().get(), layer_last, 8, CV_32S);
         output_plane.write(layer_last.clone());
 
         // Process the components
-        toolbox::objects::label_properties<label_dummy_property> prop(layer_last);
+        cv::label_properties<cc_properties> prop(layer_last);
         for(const auto &kv : prop) {
             auto nd = layer_graph.addNode();
             node_weight o;

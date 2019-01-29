@@ -12,8 +12,8 @@
 namespace misaxx_kidney_glomeruli {
     struct segmentation3d_base : public misaxx::misa_task {
 
-        misaxx::ome::misa_ome_tiff<coixx::images::mask> m_input_segmented2d;
-        misaxx::ome::misa_ome_tiff<coixx::images::labels> m_output_segmented3d;
+        misaxx::ome::misa_ome_tiff m_input_segmented2d;
+        misaxx::ome::misa_ome_tiff m_output_segmented3d;
 
         using misaxx::misa_task::misa_task;
 
