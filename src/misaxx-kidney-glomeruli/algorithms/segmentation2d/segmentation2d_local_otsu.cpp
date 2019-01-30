@@ -118,8 +118,8 @@ namespace {
 
         // Narrow down to glomeruli regions & tissue
         auto cortex_dist_candidates = cortex_dist.clone();
-        cv::toolbox::set_where_not<float>(cortex_dist_candidates, tissue_mask, 0f);
-        cv::toolbox::set_where_not<float>(cortex_dist_candidates, blobs_thresholded, 0f);
+        cv::toolbox::set_where_not<float>(cortex_dist_candidates, tissue_mask, 0.0f);
+        cv::toolbox::set_where_not<float>(cortex_dist_candidates, blobs_thresholded, 0.0f);
 
         // Options: Maximum (works well in test images, BUT outliers disturb it!)
         // Alternative: 2 * mean (seems to work)
@@ -280,7 +280,7 @@ namespace {
         cv::toolbox::otsu_per_component(local_otsu_mask, segmentation_areas);
 
         // Slice the glomeruli by the voronoi borders
-        cv::toolbox::laplacian(local_areas_voronoi_labels);
+        cv::toolbox::laplacian<int>(local_areas_voronoi_labels);
 
         cv::images::mask voronoi_borders(local_areas_voronoi_labels != 0);
         cv::toolbox::set_where<uchar>(local_otsu_mask, voronoi_borders, 0);

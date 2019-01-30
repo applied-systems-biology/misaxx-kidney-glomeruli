@@ -63,9 +63,8 @@ void segmentation2d_klingberg::work() {
     //////////////
 
     // Threshold the main image
-    uchar otsu_threshold = 0;
     cv::images::grayscale8u img_as8u = cv::toolbox::semantic_convert::to_grayscale8u(img);
-    cv::toolbox::otsu(otsu_threshold);
+    uchar otsu_threshold = cv::toolbox::otsu(img_as8u);
     if((otsu_threshold / 255.0) > percentile_tissue * m_threshold_factor.query() ) {
 
         // Get rid of non-tissue
