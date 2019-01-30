@@ -106,8 +106,7 @@ void segmentation3d_klingberg::work() {
         auto output_plane = m_output_segmented3d.at(0);
 
         // Label the 2D segmented object masks
-        int img_labels_max_component = 0;
-        cv::connectedComponents(input_plane.access_readonly().get(), layer_last, 8, CV_32S);
+        int img_labels_max_component = cv::connectedComponents(input_plane.access_readonly().get(), layer_last, 8, CV_32S);
         output_plane.write(layer_last.clone());
 
         // Process the components
@@ -133,8 +132,7 @@ void segmentation3d_klingberg::work() {
         auto output_plane = m_output_segmented3d.at(layer_index);
 
         cv::images::grayscale32s img_labels;
-        int img_labels_max_component = 0;
-        cv::connectedComponents(input_plane.access_readonly().get(), img_labels, 8, CV_32S);
+        int img_labels_max_component = cv::connectedComponents(input_plane.access_readonly().get(), img_labels, 8, CV_32S);
         output_plane.write(img_labels.clone());
 
         std::cout << "Found " << img_labels_max_component << " glomeruli in this layer" << "\n";
