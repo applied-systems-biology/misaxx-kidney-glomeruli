@@ -3,355 +3,309 @@
 //
 
 #include "segmentation2d_local_otsu.h"
+#include <cv-toolbox/ReadableBMatTypes.h>
+#include <cv-toolbox/toolbox/toolbox_blob.h>
+#include <cv-toolbox/toolbox/toolbox_statistics.h>
+#include <cv-toolbox/toolbox/toolbox_values.h>
+#include <cv-toolbox/toolbox/toolbox_semantic_convert.h>
+#include <cv-toolbox/toolbox/toolbox_binarize.h>
+#include <cv-toolbox/toolbox/toolbox_morph.h>
+#include <cv-toolbox/toolbox/toolbox_resize.h>
+#include <cv-toolbox/toolbox/toolbox_edge.h>
+#include <cv-toolbox/structuring_element.h>
+#include <cv-toolbox/recoloring_map.h>
+#include <cv-toolbox/toolbox/toolbox_recoloring.h>
+#include <cv-toolbox/toolbox/toolbox_normalize.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
-using namespace coixx;
 
-void segmentation2d_local_otsu::work() {
-    using namespace coixx::toolbox;
+namespace {
+    cv::images::grayscale32f extract_blobs_log(const cv::images::grayscale32f &img,
+            double glomeruli_min_rad, double glomeruli_max_rad, double voxel_xy) {
 
-    auto module = get_module_as<module_interface>();
+        const double glomeruli_min_rad_sigma = (glomeruli_min_rad / voxel_xy) / sqrt(2);
+        const double glomeruli_max_rad_sigma = (glomeruli_max_rad / voxel_xy) / sqrt(2);
+        const double avg_rad_sigma = (glomeruli_min_rad_sigma + glomeruli_max_rad_sigma) / 2;
 
-    images::mask tissue_mask = m_input_tissue.clone();
+        cv::images::grayscale32f log_response = img.clone();
+        cv::toolbox::laplacian_of_gaussian(log_response, avg_rad_sigma);
 
-    if(statistics::is_black(tissue_mask)) { //INFO: Not inverted yet
-        // Instead save a black image
-        images::mask img(tissue_mask.get_size(), colors::mask::background());
-        m_output_segmented2d.write(std::move(img));
-        return;
-    }
-
-    images::grayscale_float img = m_input_autofluoresence.clone();
-    images::grayscale_float img_original;
-
-    // Smooth & normalize
-    img << values::backup(img_original) << blur::median(m_median_filter_size.query()) << normalize::by_max();
-
-    // Extracts the blobs
-    images::grayscale_float blobs = extract_blobs_log(img);
-
-    images::mask cortex_mask = find_cortex_otsu_distance_and_dilation(tissue_mask, blobs);
-//            image_filter2::visualization::mask(cortex_mask, img).show_and_wait("cortex visualization");
-
-
-    img << values::set_where_not(colors::grayscale_float::black(), cortex_mask);
-
-    // Run multiple iterations of local Otsu and merge them if there are no conflicts
-    images::mask merged_mask(img.get_size(), colors::mask::background());
-
-    // Local maxima selection is expensive (Due to dilation).
-    // Instead use a two-step approach that only requires the dilation with the small selection
-    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
-    images::mask blobs_all_maxima = extract_maxima(blobs.clone(), tissue_mask, m_glomeruli_min_rad.query() / voxel_xy);
-    blobs_all_maxima << values::set_where_not(colors::mask::background(), cortex_mask);
-
-    // We first try to segment large glomeruli to prevent oversegmentation (in combination with deleting already segmented maxima)
-    for(const double radius_microns : { m_glomeruli_max_rad.query(), m_glomeruli_min_rad.query() }) {
-        const double radius = radius_microns / voxel_xy;
-
-        images::mask blobs_maxima = blobs_all_maxima.clone();
-        if(radius_microns != m_glomeruli_min_rad.query()) {
-            restrict_maxima(blobs_maxima, img, radius);
+        // Manual postprocessing for increased speed:
+        // Takes only the negative response and normalizes against the lowest response (where the blobs are)
+        float min_response = static_cast<float>(cv::toolbox::statistics::min_max_loc(log_response).min.value);
+        for(int y = 0; y < img.rows; ++y) {
+            float *row = log_response[y];
+            for(int x = 0; x < img.cols; ++x) {
+                row[x] = std::min(0.0f, row[x]) / min_response;
+            }
         }
 
-        images::grayscale32s blobs_maxima_components = labeling::connected_components<colors::grayscale32s >(blobs_maxima);
-        images::mask final_mask = segment_glomeruli_local_otsu(blobs_maxima, cortex_mask, img);
-
-        // Delete only good positions from the list of maxima to be analyzed.
-        // The reason behind this is that a larger search radius can cover two adjacent glomeruli where
-        // only one maximum is seen as relevant. This will lead to bad detection. But if the maximum is already
-        // deleted, the small scale algorithm won't be able to detect the right glomeruli.
-        blobs_all_maxima << values::set_where(colors::mask::background(), final_mask);
-
-        merged_mask << bitwise::OR(final_mask);
+        return log_response;
     }
 
-//            image_filter2::visualization::mask(merged_mask, img).show_and_wait("final mask");
-    m_output_segmented2d.write(std::move(merged_mask));
-}
+    cv::images::mask extract_maxima(const cv::images::grayscale32f &blobs, const cv::images::mask &tissue_mask,
+                                                                  const double t_radius) {
 
-coixx::images::grayscale_float segmentation2d_local_otsu::extract_blobs_log(const coixx::images::grayscale_float &img) {
+        // Find the local maxima
+        cv::images::mask blobs_mask = cv::toolbox::exclusive_local_maxima(blobs, static_cast<int>(2 * t_radius));
+        cv::toolbox::set_where_not<uchar>(blobs_mask, tissue_mask, 0);
 
-    auto module = get_module_as<module_interface>();
+        return blobs_mask;
+    }
 
-    using namespace coixx::toolbox;
+    void restrict_maxima(cv::images::mask &t_maxima, const cv::images::grayscale32f &img,
+                                               const double t_radius) {
 
-    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
-    const double glomeruli_min_rad_sigma = (m_glomeruli_min_rad.query() / voxel_xy) / sqrt(2);
-    const double glomeruli_max_rad_sigma = (m_glomeruli_max_rad.query() / voxel_xy) / sqrt(2);
-    const double avg_rad_sigma = (glomeruli_min_rad_sigma + glomeruli_max_rad_sigma) / 2;
+        // Get all maxima
+        std::vector<cv::pixel<float>> pixels;
 
-    images::grayscale_float log_response = img.clone() << blob::laplacian_of_gaussian(avg_rad_sigma);
-
-    // Manual postprocessing for increased speed:
-    // Takes only the negative response and normalizes against the lowest response (where the blobs are)
-    float min_response = statistics::min(log_response);
-    for(int y = 0; y < img.get_mat().rows; ++y) {
-        colors::grayscale_float *row = log_response.row_ptr(y);
-        for(int x = 0; x < img.get_mat().cols; ++x) {
-            row[x].value = std::min(0.0f, row[x].value) / min_response;
+        for(int y = 0; y < t_maxima.rows; ++y) {
+            const uchar *row = t_maxima[y];
+            const float *row_values = img[y];
+            for(int x = 0; x < t_maxima.cols; ++x ) {
+                if(row[x] > 0) {
+                    pixels.emplace_back(cv::pixel<float>(x, y, row_values[x]));
+                }
+            }
         }
-    }
 
-    return log_response;
-}
+        const double r_sq = pow(2 * t_radius, 2);
 
-coixx::images::mask segmentation2d_local_otsu::extract_maxima(coixx::images::grayscale_float blobs,
-                                                              const coixx::images::mask &tissue_mask,
-                                                              const double t_radius) {
-
-    using namespace coixx::toolbox;
-
-    // Find the local maxima
-    images::mask blobs_mask = localminmax::local_exclusive_max_morph(blobs, static_cast<int>(2 * t_radius));
-    blobs_mask << values::set_where_not(colors::mask::black(), tissue_mask);
-
-    return blobs_mask;
-}
-
-void
-segmentation2d_local_otsu::restrict_maxima(coixx::images::mask &t_maxima, const coixx::images::grayscale_float &img,
-                                           const double t_radius) {
-
-    using namespace coixx::toolbox;
-
-    std::vector<pixel<colors::grayscale_float >> pixels;
-    img << values::get_where(std::back_inserter(pixels), t_maxima);
-
-    const double r_sq = pow(2 * t_radius, 2);
-
-    // For each pixel, check if we have another pixel with same or larger value within radius
-    // If this is the case, we drop the pixel
-    for(size_t i = 0; i < pixels.size(); ++i) {
-        const auto px = pixels[i];
-        for(size_t j = 0; j < pixels.size(); ++j) {
-            if(i != j) {
-                const auto px2 = pixels[j];
-                const double l = pow(px.x - px2.x, 2) + pow(px.y - px2.y, 2);
-                if(l <= r_sq && px2.value >= px.value) {
-                    t_maxima.get_mat().at<uchar>(cv::Point(px.x, px.y)) = 0; // Get rid of the maximum
-                    break;
+        // For each pixel, check if we have another pixel with same or larger value within radius
+        // If this is the case, we drop the pixel
+        for(size_t i = 0; i < pixels.size(); ++i) {
+            const auto px = pixels[i];
+            for(size_t j = 0; j < pixels.size(); ++j) {
+                if(i != j) {
+                    const auto px2 = pixels[j];
+                    const double l = pow(px.location.x - px2.location.x, 2) + pow(px.location.y - px2.location.y, 2);
+                    if(l <= r_sq && px2.value >= px.value) {
+                        t_maxima.at<uchar>(px.location) = 0; // Get rid of the maximum
+                        break;
+                    }
                 }
             }
         }
     }
-}
 
-coixx::images::mask
-segmentation2d_local_otsu::find_cortex_otsu_distance_and_dilation(const coixx::images::mask &tissue_mask,
-                                                                  const coixx::images::grayscale_float &blobs) {
+    cv::images::mask find_cortex_otsu_distance_and_dilation(const cv::images::mask &tissue_mask,
+                                                                      const cv::images::grayscale32f &blobs,
+                                                                      double voxel_xy,
+                                                                      double glomeruli_max_rad,
+                                                                      double cortex_segmentation_dilation_group_size) {
 
-    auto module = get_module_as<module_interface>();
+        const int glomeruli_max_diameter = static_cast<int>((glomeruli_max_rad / voxel_xy) * 2);
 
-    using namespace coixx::toolbox;
+        cv::images::grayscale32f cortex_dist = cv::images::grayscale32f::allocate(blobs.size());
+        cv::distanceTransform(tissue_mask, cortex_dist, cv::DIST_L2, 3);
 
-    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
-    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad.query() / voxel_xy) * 2);
+        // Apply otsu
+        cv::images::grayscale8u blobs_thresholded = cv::toolbox::semantic_convert::to_grayscale8u(blobs);
+        cv::toolbox::otsu_where(blobs_thresholded, tissue_mask);
 
-    images::grayscale_float cortex_dist(blobs.get_size(), colors::grayscale_float::black());
-    cv::distanceTransform(tissue_mask.get_mat(), cortex_dist.get_mat(), cv::DIST_L2, 3);
+        // Dilation based method
+        int dilate_diameter = static_cast<int>(glomeruli_max_diameter * 0.1 * cortex_segmentation_dilation_group_size);
+        cv::images::grayscale8u blobs_thresholded_small =
+                cv::toolbox::resize(blobs_thresholded, 0.1, cv::toolbox::resize_interpolation::nearest);
+        cv::toolbox::morph::dilate(blobs_thresholded_small, cv::structuring_element::ellipse(dilate_diameter));
 
-    // Apply otsu
-    images::grayscale8u blobs_thresholded = semantic_convert<images::grayscale8u >(blobs) << binarize::otsu_where(tissue_mask);
+        cv::images::mask cortex_by_dilation = cv::toolbox::resize(blobs_thresholded_small,
+                                                 blobs_thresholded.size(),
+                                                 cv::toolbox::resize_interpolation::nearest);
+        cv::toolbox::set_where_not<uchar>(cortex_by_dilation, tissue_mask, 0);
+        cv::toolbox::otsu(blobs_thresholded);
 
-    // Dilation based method
-    int dilate_diameter = static_cast<int>(glomeruli_max_diameter * 0.1 * m_cortex_segmentation_dilation_group_size.query());
-    images::grayscale8u blobs_thresholded_small = resize(blobs_thresholded, 0.1, resize_interpolation::nearest);
-    blobs_thresholded_small << morph::dilate(structuring_element::ellipse(dilate_diameter));
+        // Narrow down to glomeruli regions & tissue
+        auto cortex_dist_candidates = cortex_dist.clone();
+        cv::toolbox::set_where_not<float>(cortex_dist_candidates, tissue_mask, 0f);
+        cv::toolbox::set_where_not<float>(cortex_dist_candidates, blobs_thresholded, 0f);
 
-    images::mask cortex_by_dilation = resize(blobs_thresholded_small,
-                                             blobs_thresholded.get_size(),
-                                             resize_interpolation::nearest);
-    cortex_by_dilation << values::set_where_not(colors::mask(0), tissue_mask);
-    blobs_thresholded << binarize::otsu();
-
-    // Narrow down to glomeruli regions & tissue
-    auto cortex_dist_candidates = cortex_dist.clone();
-    cortex_dist_candidates << values::set_where_not(colors::grayscale_float(0), tissue_mask);
-    cortex_dist_candidates << values::set_where_not(colors::grayscale_float(0), blobs_thresholded);
-
-    // Options: Maximum (works well in test images, BUT outliers disturb it!)
-    // Alternative: 2 * mean (seems to work)
+        // Options: Maximum (works well in test images, BUT outliers disturb it!)
+        // Alternative: 2 * mean (seems to work)
 //            float dist_max = toolbox(cortex_dist_candidates).max();
-    images::mask cortex_dist_candidates_nonzero(cortex_dist_candidates.get_mat() > 0);
-    double dist = statistics::get_mean_where(cortex_dist_candidates, cortex_dist_candidates_nonzero) * 2;
+        cv::images::mask cortex_dist_candidates_nonzero { cortex_dist_candidates > 0 };
+        double dist = cv::mean(cortex_dist_candidates, cortex_dist_candidates_nonzero)[0] * 2;
 
-    images::mask cortex(cortex_dist.get_mat() <= dist);
+        cv::images::mask cortex { cortex_dist <= dist };
 
-    // Combine both
-    cortex << values::set_where(colors::mask(255), cortex_by_dilation);
-    cortex << values::set_where_not(colors::mask(0), tissue_mask);
+        // Combine both
+        cv::toolbox::set_where<uchar>(cortex, cortex_by_dilation, 255);
+        cv::toolbox::set_where_not<uchar>(cortex, tissue_mask, 0);
 
-    return cortex;
-}
-
-void
-segmentation2d_local_otsu::segment_glomeruli_local_otsu_blacklist_by_contour(const coixx::images::grayscale_float &,
-                                                                             const coixx::images::mask &blobs_maxima_mask,
-                                                                             const coixx::images::mask &local_otsu_mask,
-                                                                             const coixx::images::grayscale32s &local_otsu_mask_components,
-                                                                             const int local_otsu_mask_max_component_id,
-                                                                             coixx::mutable_recoloring_map<coixx::colors::labels> &blacklist) {
-
-    auto module = get_module_as<module_interface>();
-
-    using namespace coixx::toolbox;
-
-//            visualizer_gui() << named_image(img, "original") << named_image(blobs_maxima_mask, "blobs maxima") << named_image(local_otsu_mask, "local otsu mask")
-//                                                                                                               << named_image(local_otsu_mask_components, "mask components") << show_visualizer_gui();
-
-    // Detect the contours
-    std::vector<std::vector<cv::Point>> contours;
-    cv::findContours(local_otsu_mask.get_mat(), contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
-
-    // Find the center for each label
-    std::vector<cv::Point> label_centers;
-    label_centers.resize(static_cast<size_t>(local_otsu_mask_max_component_id) + 1, cv::Point(-1, -1));
-
-    for(int y = 0; y < local_otsu_mask_components.get_mat().rows; ++y) {
-
-        const colors::mask * row_maxima = blobs_maxima_mask.row_ptr(y);
-        const colors::labels * row_components = local_otsu_mask_components.row_ptr(y);
-
-        for(int x = 0; x < local_otsu_mask_components.get_mat().cols; ++x) {
-            if(row_maxima[x] > 0 && row_components[x] > 0) {
-                label_centers[row_components[x]] = cv::Point(x, y);
-            }
-        }
+        return cortex;
     }
 
-    // Assign a contour to each label
-    std::vector<std::vector<cv::Point>> label_contours;
-    label_contours.resize(label_centers.size());
+    void segment_glomeruli_local_otsu_blacklist_by_contour(const cv::images::grayscale32f &,
+                                                             const cv::images::mask &blobs_maxima_mask,
+                                                             const cv::images::mask &local_otsu_mask,
+                                                             const cv::images::grayscale32s &local_otsu_mask_components,
+                                                             const int local_otsu_mask_max_component_id,
+                                                             cv::mutable_recoloring_map<int> &blacklist,
+                                                             const double voxel_xy,
+                                                             const double glomeruli_min_rad_,
+                                                             const double glomeruli_max_rad_,
+                                                             const double isoperimetric_quotient_threshold) {
 
-    for(auto &contour : contours) {
-        for(size_t label = 1; label < label_centers.size(); ++label) {
-            if(label_contours[label].empty() && label_centers[label].x >= 0) {
-                double d = cv::pointPolygonTest(contour, label_centers[label], false);
-                if(d > 0) {
-                    label_contours[label] = std::move(contour);
-                    break;
+        // Detect the contours
+        std::vector<std::vector<cv::Point>> contours;
+        cv::findContours(local_otsu_mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+        // Find the center for each label
+        std::vector<cv::Point> label_centers;
+        label_centers.resize(static_cast<size_t>(local_otsu_mask_max_component_id) + 1, cv::Point(-1, -1));
+
+        for(int y = 0; y < local_otsu_mask_components.rows; ++y) {
+
+            const uchar* row_maxima = blobs_maxima_mask[y];
+            const int* row_components = local_otsu_mask_components[y];
+
+            for(int x = 0; x < local_otsu_mask_components.cols; ++x) {
+                if(row_maxima[x] > 0 && row_components[x] > 0) {
+                    label_centers[row_components[x]] = cv::Point(x, y);
                 }
             }
         }
-    }
 
-    // Blacklist phase
-    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
-    const int glomeruli_min_rad = static_cast<int>(m_glomeruli_min_rad.query() / voxel_xy);
-    const int glomeruli_max_rad = static_cast<int>(m_glomeruli_max_rad.query() / voxel_xy);
+        // Assign a contour to each label
+        std::vector<std::vector<cv::Point>> label_contours;
+        label_contours.resize(label_centers.size());
 
-    for(size_t label = 1; label < label_contours.size(); ++label) {
-        const auto contour = label_contours[label];
-        const auto center = label_centers[label];
+        for(auto &contour : contours) {
+            for(size_t label = 1; label < label_centers.size(); ++label) {
+                if(label_contours[label].empty() && label_centers[label].x >= 0) {
+                    double d = cv::pointPolygonTest(contour, label_centers[label], false);
+                    if(d > 0) {
+                        label_contours[label] = std::move(contour);
+                        break;
+                    }
+                }
+            }
+        }
 
-        // We need min 5 points to fit the ellipse
-        if(contour.size() >= 5 && center.x >= 0) {
+        // Blacklist phase
+        const int glomeruli_min_rad = static_cast<int>(glomeruli_min_rad_ / voxel_xy);
+        const int glomeruli_max_rad = static_cast<int>(glomeruli_max_rad_ / voxel_xy);
 
-            const auto fitted_ellipse = cv::fitEllipse(contour);
-            const double fitted_ellipse_r1 = fitted_ellipse.size.width / 2.0;
-            const double fitted_ellipse_r2 = fitted_ellipse.size.height / 2.0;
+        for(size_t label = 1; label < label_contours.size(); ++label) {
+            const auto contour = label_contours[label];
+            const auto center = label_centers[label];
 
-            // Radius check
-            double min_rad = std::min(fitted_ellipse_r1, fitted_ellipse_r2);
-            double max_rad = std::max(fitted_ellipse_r1, fitted_ellipse_r2);
+            // We need min 5 points to fit the ellipse
+            if(contour.size() >= 5 && center.x >= 0) {
 
-            if(std::floor(min_rad) < glomeruli_min_rad ||
-               std::floor(max_rad) > glomeruli_max_rad ||
-               std::floor(max_rad) < glomeruli_min_rad) {
-                blacklist.set_recolor(colors::labels(label), colors::labels::background());
+                const auto fitted_ellipse = cv::fitEllipse(contour);
+                const double fitted_ellipse_r1 = fitted_ellipse.size.width / 2.0;
+                const double fitted_ellipse_r2 = fitted_ellipse.size.height / 2.0;
+
+                // Radius check
+                double min_rad = std::min(fitted_ellipse_r1, fitted_ellipse_r2);
+                double max_rad = std::max(fitted_ellipse_r1, fitted_ellipse_r2);
+
+                if(std::floor(min_rad) < glomeruli_min_rad ||
+                   std::floor(max_rad) > glomeruli_max_rad ||
+                   std::floor(max_rad) < glomeruli_min_rad) {
+                    blacklist.set_recolor(label, 0);
 //                        std::cout << "Blacklist " << label << " failed radius requirements" << std::endl;
-                continue;
-            }
+                    continue;
+                }
 
-            // Eccentricity check
-            if(max_rad / min_rad >= 2) {
-                blacklist.set_recolor(colors::labels(label), colors::labels::background());
+                // Eccentricity check
+                if(max_rad / min_rad >= 2) {
+                    blacklist.set_recolor(label, 0);
 //                        std::cout << "Blacklist " << label << " failed eccentricity requirements" << std::endl;
-                continue;
-            }
+                    continue;
+                }
 
-            // Countour roundness check
-            const double isoperimetric_quotient = (4 * M_PI * cv::contourArea(contour)) / pow(cv::arcLength(contour, true), 2);
-            const double fitted_ellipse_area = M_PI * fitted_ellipse_r1 * fitted_ellipse_r2;
-            const double fitted_ellipse_perimeter = 2 * M_PI * sqrt((pow(fitted_ellipse_r1, 2) + pow(fitted_ellipse_r2, 2)) / 2.0);
-            const double fitted_isoperimetric_quotient = (4 * M_PI * fitted_ellipse_area) / pow(fitted_ellipse_perimeter, 2);
+                // Countour roundness check
+                const double isoperimetric_quotient = (4 * M_PI * cv::contourArea(contour)) / pow(cv::arcLength(contour, true), 2);
+                const double fitted_ellipse_area = M_PI * fitted_ellipse_r1 * fitted_ellipse_r2;
+                const double fitted_ellipse_perimeter = 2 * M_PI * sqrt((pow(fitted_ellipse_r1, 2) + pow(fitted_ellipse_r2, 2)) / 2.0);
+                const double fitted_isoperimetric_quotient = (4 * M_PI * fitted_ellipse_area) / pow(fitted_ellipse_perimeter, 2);
 
 //                    std::cout << "Q = " << isoperimetric_quotient << ", expected Q = " << fitted_isoperimetric_quotient << std::endl;
 
-            if(isoperimetric_quotient < m_isoperimetric_quotient_threshold.query() * fitted_isoperimetric_quotient || isoperimetric_quotient > 1) {
-                blacklist.set_recolor(colors::labels(label), colors::labels::background());
+                if(isoperimetric_quotient < isoperimetric_quotient_threshold * fitted_isoperimetric_quotient || isoperimetric_quotient > 1) {
+                    blacklist.set_recolor(label, 0);
 //                        std::cout << "Blacklist " << label << " failed isoperimetric quotient requirements" << std::endl;
-                continue;
-            }
+                    continue;
+                }
 
-        }
-        else {
+            }
+            else {
 //                    std::cout << "Blacklist " << label << " has no contour" << std::endl;
-            blacklist.set_recolor(colors::labels(label), colors::labels::background());
+                blacklist.set_recolor(label, 0);
+            }
         }
+
     }
 
-}
+    cv::images::mask segment_glomeruli_local_otsu(const cv::images::mask &blobs_maxima,
+            const cv::images::mask &cortex_mask,
+            const cv::images::grayscale32f &img,
+            const double voxel_xy,
+            const double glomeruli_max_rad_,
+            const double glomeruli_min_rad_,
+            const int voronoi_cell_radius_border,
+            const double isoperimetric_quotient_threshold) {
 
-coixx::images::mask segmentation2d_local_otsu::segment_glomeruli_local_otsu(const coixx::images::mask &blobs_maxima,
-                                                                            const coixx::images::mask &cortex_mask,
-                                                                            const coixx::images::grayscale_float &img) {
-    auto module = get_module_as<module_interface>();
+        const int glomeruli_max_diameter = static_cast<int>((glomeruli_max_rad_ / voxel_xy) * 2);
+        const int glomeruli_search_diameter = glomeruli_max_diameter + voronoi_cell_radius_border;
 
-    using namespace coixx::toolbox;
+        // Create an area around each maximum
+        cv::images::mask local_max_areas_mask = blobs_maxima.clone();
+        cv::toolbox::morph::dilate(local_max_areas_mask, cv::structuring_element::ellipse(glomeruli_search_diameter));
 
-    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
-    const int glomeruli_max_diameter = static_cast<int>((m_glomeruli_max_rad.query() / voxel_xy) * 2);
-    const int glomeruli_search_diameter = glomeruli_max_diameter + m_voronoi_cell_radius_border.query();
+        cv::toolbox::set_where_not<uchar>(local_max_areas_mask, cortex_mask, 0); // Remove regions outside cortex
 
-    // Create an area around each maximum
-    images::mask local_max_areas_mask = blobs_maxima.clone() << morph::dilate(structuring_element::ellipse(glomeruli_search_diameter));
-    local_max_areas_mask << values::set_where_not(colors::mask::background(), cortex_mask); // Remove regions outside cortex
+        // Generate voronoi partitioning
+        cv::images::grayscale32f local_areas_voronoi_distance(img.size(), 0);
+        cv::images::grayscale8u local_areas_voronoi_centers = blobs_maxima.clone();
+        cv::toolbox::invert(local_areas_voronoi_centers);
+        cv::images::grayscale32s local_areas_voronoi_labels(img.size(), 0);
+        cv::distanceTransform(local_areas_voronoi_centers,
+                              local_areas_voronoi_distance,
+                              local_areas_voronoi_labels,
+                              cv::DIST_L2,
+                              3);
 
-    // Generate voronoi partitioning
-    images::grayscale_float local_areas_voronoi_distance(img.get_size(), colors::grayscale_float::black());
-    images::grayscale8u local_areas_voronoi_centers = blobs_maxima.clone() << values::invert();
-    images::grayscale32s local_areas_voronoi_labels(img.get_size(), colors::labels::background());
-    cv::distanceTransform(local_areas_voronoi_centers.get_mat(),
-                          local_areas_voronoi_distance.get_mat(),
-                          local_areas_voronoi_labels.get_mat(),
-                          cv::DIST_L2,
-                          3);
+        // Delete partitioning outside cortex
+        cv::toolbox::set_where_not<int>(local_areas_voronoi_labels, cortex_mask, 0);
 
-    // Delete partitioning outside cortex
-    local_areas_voronoi_labels << values::set_where_not(colors::grayscale32s::background(), cortex_mask);
+        // Apply per-component localized Otsu on the input image to segment the area around each maximum
+        cv::images::labels segmentation_areas = local_areas_voronoi_labels.clone();
+        cv::toolbox::set_where_not(segmentation_areas, local_max_areas_mask, 0); // Do not consider areas outside of circle
 
-    // Apply per-component localized Otsu on the input image to segment the area around each maximum
-    auto segmentation_areas = local_areas_voronoi_labels.clone();
-    segmentation_areas << values::set_where_not(colors::grayscale32s::background(), local_max_areas_mask); // Do not consider areas outside of circle
+        cv::images::mask local_otsu_mask = cv::toolbox::semantic_convert::to_grayscale8u(img);
+        cv::toolbox::otsu_per_component(local_otsu_mask, segmentation_areas);
 
-    images::mask local_otsu_mask = semantic_convert<images::grayscale8u >(img) << binarize::otsu_per_component(segmentation_areas);
+        // Slice the glomeruli by the voronoi borders
+        cv::toolbox::laplacian(local_areas_voronoi_labels);
 
-    // Slice the glomeruli by the voronoi borders
-    local_areas_voronoi_labels << edge::laplacian();
+        cv::images::mask voronoi_borders(local_areas_voronoi_labels != 0);
+        cv::toolbox::set_where<uchar>(local_otsu_mask, voronoi_borders, 0);
 
-    images::mask voronoi_borders(local_areas_voronoi_labels.get_mat() != 0);
-    local_otsu_mask << values::set_where(colors::mask::background(), voronoi_borders);
+        // Blacklist phase: Get rid of everything we don't want
+        // First calculate the 8-connected components (8 because this will help removing touching pixels)
+        int local_otsu_mask_max_component_id = 0;
+        cv::images::grayscale32s local_otsu_mask_components;
+        cv::connectedComponents(local_otsu_mask, local_otsu_mask_components, 8, CV_32S);
 
-    // Blacklist phase: Get rid of everything we don't want
-    // First calculate the 8-connected components (8 because this will help removing touching pixels)
-    int local_otsu_mask_max_component_id = 0;
-    images::grayscale32s local_otsu_mask_components = labeling::connected_components<colors::labels>(local_otsu_mask,
-                                                                                                    local_otsu_mask_max_component_id,
-                                                                                                    labeling::connectivity::connect_8);
-    identity_recoloring_hashmap<colors::labels> blacklist;
+        cv::identity_recoloring_hashmap<int> blacklist;
 
-    // Blacklist the components that border to the max circle and components that are too small
-    segment_glomeruli_local_otsu_blacklist_by_contour(img,
-                                                      blobs_maxima,
-                                                      local_otsu_mask,
-                                                      local_otsu_mask_components,
-                                                      local_otsu_mask_max_component_id,
-                                                      blacklist);
+        // Blacklist the components that border to the max circle and components that are too small
+        segment_glomeruli_local_otsu_blacklist_by_contour(img,
+                                                          blobs_maxima,
+                                                          local_otsu_mask,
+                                                          local_otsu_mask_components,
+                                                          local_otsu_mask_max_component_id,
+                                                          blacklist, voxel_xy,
+                                                          glomeruli_min_rad_,
+                                                          glomeruli_max_rad_,
+                                                          isoperimetric_quotient_threshold);
 
-    local_otsu_mask_components << recoloring::recolor(blacklist);
+        cv::toolbox::recolor(local_otsu_mask_components, blacklist);
+
 
 //            images::mask local_otsu_mask_onlymaxima_noborder = toolbox2::to_mask(local_otsu_mask_components);
 //            image_filter2::visualization::masks({local_otsu_mask,
@@ -360,7 +314,86 @@ coixx::images::mask segmentation2d_local_otsu::segment_glomeruli_local_otsu(cons
 //                                                 blobs_maxima,
 //                                                 voronoi_borders}, img).show_and_wait("local otsu after non-maxima + no border blacklist vis");
 
-    return toolbox::mask::from(local_otsu_mask_components);
+        return cv::toolbox::to_mask(local_otsu_mask_components);
+    }
+}
+
+void segmentation2d_local_otsu::work() {
+
+    auto module = get_module_as<module_interface>();
+
+    cv::images::mask tissue_mask = cv::toolbox::semantic_convert::to_grayscale8u(m_input_tissue.clone());
+
+    if(cv::countNonZero(tissue_mask) == 0) { //INFO: Not inverted yet
+        // Instead save a black image
+        cv::images::mask img { tissue_mask.size(), 0 };
+        m_output_segmented2d.write(std::move(img));
+        return;
+    }
+
+    const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
+
+    cv::images::grayscale32f img = cv::toolbox::semantic_convert::to_grayscale32f(m_input_autofluoresence.clone());
+    cv::images::grayscale32f img_original = img.clone();
+
+    // Smooth & normalize
+    cv::medianBlur(img, img.buffer(), m_median_filter_size.query()); img.swap();
+    cv::toolbox::normalize::by_max(img);
+
+    // Extracts the blobs
+    cv::images::grayscale32f blobs = extract_blobs_log(img,
+            m_glomeruli_min_rad.query(),
+            m_glomeruli_max_rad.query(),
+            voxel_xy);
+    cv::images::mask cortex_mask = find_cortex_otsu_distance_and_dilation(tissue_mask,
+            blobs,
+            voxel_xy,
+            m_glomeruli_max_rad.query(),
+            m_cortex_segmentation_dilation_group_size.query());
+
+    cv::toolbox::set_where_not<float>(img, cortex_mask, 0);
+
+    // Run multiple iterations of local Otsu and merge them if there are no conflicts
+    cv::images::mask merged_mask { img.size(), 0 };
+
+    // Local maxima selection is expensive (Due to dilation).
+    // Instead use a two-step approach that only requires the dilation with the small selection
+    cv::images::mask blobs_all_maxima = extract_maxima(blobs.clone(), tissue_mask, m_glomeruli_min_rad.query() / voxel_xy);
+    cv::toolbox::set_where_not<uchar>(blobs_all_maxima, cortex_mask, 0);
+
+    // We first try to segment large glomeruli to prevent oversegmentation (in combination with deleting already segmented maxima)
+    for(const double radius_microns : { m_glomeruli_max_rad.query(), m_glomeruli_min_rad.query() }) {
+        const double radius = radius_microns / voxel_xy;
+
+        cv::images::mask blobs_maxima = blobs_all_maxima.clone();
+        if(radius_microns != m_glomeruli_min_rad.query()) {
+            restrict_maxima(blobs_maxima, img, radius);
+        }
+
+        cv::images::grayscale32s blobs_maxima_components;
+        cv::connectedComponents(blobs_maxima, blobs_maxima_components, 8, CV_32S);
+
+        cv::images::mask final_mask = segment_glomeruli_local_otsu(blobs_maxima,
+                cortex_mask,
+                img,
+                voxel_xy,
+                m_glomeruli_max_rad.query(),
+                m_glomeruli_min_rad.query(),
+                m_voronoi_cell_radius_border.query(),
+                m_isoperimetric_quotient_threshold.query());
+
+        // Delete only good positions from the list of maxima to be analyzed.
+        // The reason behind this is that a larger search radius can cover two adjacent glomeruli where
+        // only one maximum is seen as relevant. This will lead to bad detection. But if the maximum is already
+        // deleted, the small scale algorithm won't be able to detect the right glomeruli.
+        cv::toolbox::set_where<uchar>(blobs_all_maxima, final_mask, 0);
+
+        cv::bitwise_or(merged_mask, final_mask, merged_mask.buffer());
+        merged_mask.swap();
+    }
+
+//            image_filter2::visualization::mask(merged_mask, img).show_and_wait("final mask");
+    m_output_segmented2d.write(std::move(merged_mask));
 }
 
 void segmentation2d_local_otsu::create_parameters(misa_parameter_builder &t_parameters) {

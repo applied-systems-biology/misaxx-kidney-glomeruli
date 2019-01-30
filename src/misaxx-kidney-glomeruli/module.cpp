@@ -12,7 +12,6 @@
 #include "algorithms/quantification/quantification_constrained_klingberg.h"
 
 using namespace misaxx;
-using namespace coixx;
 using namespace misaxx_kidney_glomeruli;
 
 void module::create_blueprints(misa_dispatcher::blueprint_list &t_blueprints,

@@ -7,7 +7,6 @@
 
 #include <misaxx-kidney-glomeruli/module_interface.h>
 #include <misaxx/core/misa_task.h>
-#include <misaxx/imaging/coixx/image.h>
 
 namespace misaxx_kidney_glomeruli {
     struct segmentation3d_base : public misaxx::misa_task {

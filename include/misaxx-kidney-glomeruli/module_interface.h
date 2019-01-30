@@ -12,8 +12,6 @@
 #include <misaxx-tissue/module_interface.h>
 #include <misaxx/ome/attachments/misa_ome_voxel_size.h>
 
-using namespace coixx;
-
 namespace misaxx_kidney_glomeruli {
     struct module_interface : public misaxx::misa_module_interface {
 

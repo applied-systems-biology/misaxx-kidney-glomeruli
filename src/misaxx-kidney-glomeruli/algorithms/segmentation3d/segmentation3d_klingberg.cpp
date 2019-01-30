@@ -8,9 +8,11 @@
 #include <utility>
 #include <unordered_set>
 #include <cv-toolbox/ReadableBMatTypes.h>
+#include <cv-toolbox/label_properties.h>
+#include <cv-toolbox/recoloring_map.h>
+#include <cv-toolbox/toolbox/toolbox_recoloring.h>
 
 using namespace misaxx;
-using namespace coixx;
 using namespace misaxx_kidney_glomeruli;
 
 /**
@@ -110,7 +112,7 @@ void segmentation3d_klingberg::work() {
 
         // Process the components
         cv::label_properties<cc_properties> prop(layer_last);
-        for(const auto &kv : prop) {
+        for(const auto &kv : prop.rows) {
             auto nd = layer_graph.addNode();
             node_weight o;
             o.layer = 0;
@@ -119,7 +121,7 @@ void segmentation3d_klingberg::work() {
             layer_nodes[0][kv.first] = nd;
         }
 
-        std::cout << "Found " << (img_labels_max_component - 1) << " glomeruli in first layer" << std::endl;
+        std::cout << "Found " << (img_labels_max_component - 1) << " glomeruli in first layer" << "\n";
     }
 
     // For all other layers also look at the overlap
@@ -130,22 +132,23 @@ void segmentation3d_klingberg::work() {
         const auto input_plane = m_input_segmented2d.at(layer_index);
         auto output_plane = m_output_segmented3d.at(layer_index);
 
+        cv::images::grayscale32s img_labels;
         int img_labels_max_component = 0;
-        images::grayscale32s img_labels = labeling::connected_components(input_plane.access_readonly().get(), img_labels_max_component);
+        cv::connectedComponents(input_plane.access_readonly().get(), img_labels, 8, CV_32S);
         output_plane.write(img_labels.clone());
 
-        std::cout << "Found " << img_labels_max_component << " glomeruli in this layer" << std::endl;
+        std::cout << "Found " << img_labels_max_component << " glomeruli in this layer" << "\n";
 
         // Find the edges
         std::unordered_set<int> new_nodes;
         std::unordered_set<std::pair<int, int>, boost::hash<std::pair<int, int>>> edges;
 
-        for(int i = 0; i < layer_last.get_mat().rows; ++i) {
+        for(int i = 0; i < layer_last.rows; ++i) {
 
-            const colors::labels *row_layer_last = layer_last.row_ptr(i);
-            const colors::labels *row_layer_current = img_labels.row_ptr(i);
+            const int *row_layer_last = layer_last[i];
+            const int *row_layer_current = img_labels[i];
 
-            for(int j = 0; j < layer_last.get_mat().cols; ++j) {
+            for(int j = 0; j < layer_last.cols; ++j) {
 
                 const int group = row_layer_current[j]; // The object in the current layer
                 const int bottom_group = row_layer_last[j]; // The object in the last layer
@@ -203,20 +206,20 @@ void segmentation3d_klingberg::work() {
     lemon::ListGraph::NodeMap<int> connected_components(layer_graph);
     lemon::connectedComponents(layer_graph, connected_components);
     for(size_t layer_index = 0; layer_index < m_output_segmented3d.size(); ++layer_index) {
-        std::cout << "Applying LUT " << std::to_string(layer_index + 1) << " / " << std::to_string(m_output_segmented3d.size()) << std::endl;
+        std::cout << "Applying LUT " << std::to_string(layer_index + 1) << " / " << std::to_string(m_output_segmented3d.size()) << "\n";
 
-        zero_recoloring_hashmap<colors::labels> recoloring;
+        cv::zero_recoloring_hashmap<int> recoloring;
         for(auto nd = lemon::ListGraph::NodeIt(layer_graph); nd != lemon::INVALID; ++nd) {
             const auto obj = node_weights[nd];
             if(obj.layer == layer_index) {
                 int component = connected_components[nd] + 1; // Starts with 0
-                recoloring.set_recolor(colors::labels(obj.label), colors::labels(component));
+                recoloring.set_recolor(obj.label, component);
             }
         }
 
         auto output_plane = m_output_segmented3d.at(layer_index);
         auto rw = output_plane.access_readwrite();
-        rw.get() << recoloring::recolor(recoloring);
+        cv::toolbox::recolor(rw.get(), recoloring);
     }
 }
 

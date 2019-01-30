@@ -5,7 +5,6 @@
 #include <misaxx-kidney-glomeruli/module_interface.h>
 
 using namespace misaxx;
-using namespace coixx;
 using namespace misaxx_kidney_glomeruli;
 
 glomeruli module_interface::get_glomeruli() {
@@ -14,8 +13,8 @@ glomeruli module_interface::get_glomeruli() {
 
 void module_interface::setup() {
     m_input_autofluorescence.suggest_import_location(filesystem, "/");
-    m_output_segmented2d.suggest_export_location(filesystem, "glomeruli2d", m_input_autofluorescence.derive().of_coixx<images::mask>());
-    m_output_segmented3d.suggest_export_location(filesystem, "glomeruli3d", m_output_segmented2d.derive().of_coixx<images::labels>());
+    m_output_segmented2d.suggest_export_location(filesystem, "glomeruli2d", m_input_autofluorescence.derive().of_opencv(CV_8U));
+    m_output_segmented3d.suggest_export_location(filesystem, "glomeruli3d", m_output_segmented2d.derive().of_opencv(CV_32S));
     m_output_quantification.suggest_export_location(filesystem, "quantified/quantified.json");
 
     // Init the submodule
