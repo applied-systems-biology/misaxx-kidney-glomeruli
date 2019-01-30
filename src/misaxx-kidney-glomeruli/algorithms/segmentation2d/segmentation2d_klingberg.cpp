@@ -53,7 +53,7 @@ void segmentation2d_klingberg::work() {
     auto img_tissue = img.clone();
 
     // Get rid of non-tissue
-    img_tissue(img_non_tissue_mask) = 0;
+    cv::toolbox::set_where<float>(img_tissue, img_non_tissue_mask, 0);
 
     // Only select glomeruli if the threshold is higher than 75-percentile of kidney tissue
     double percentile_tissue = cv::toolbox::statistics::get_percentile(img, m_threshold_percentile.query());
@@ -68,7 +68,7 @@ void segmentation2d_klingberg::work() {
     if((otsu_threshold / 255.0) > percentile_tissue * m_threshold_factor.query() ) {
 
         // Get rid of non-tissue
-        img_as8u(img_non_tissue_mask) = 0;
+        cv::toolbox::set_where<uchar>(img_as8u, img_non_tissue_mask, 0);
 
         // Morphological operation (object should have min. radius)
         cv::toolbox::morph::open(img_as8u, cv::structuring_element::ellipse(glomeruli_min_morph_disk_radius * 2));
