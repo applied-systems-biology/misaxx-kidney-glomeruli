@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <misaxx/core/misa_serializeable.h>
 #include <misaxx/ome/attachments/misa_ome_voxel.h>
 #include <misaxx/ome/attachments/misa_ome_pixel_count.h>
 #include <misaxx/ome/attachments/misa_ome_quantity.h>
