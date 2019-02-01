@@ -49,7 +49,7 @@ void module::build(const misa_dispatcher::blueprint_builder &t_builder) {
     for (size_t plane = 0; plane < m_input_autofluorescence.size(); ++plane) {
         auto &worker = t_builder.build<segmentation2d_base>(m_segmentation2d_algorithm.query());
         worker.m_input_autofluoresence = m_input_autofluorescence.at(plane);
-        worker.m_input_tissue = m_tissue->m_output_segmented3d.at(plane);
+        worker.m_input_tissue = m_tissue->m_output_segmented.at(plane);
         worker.m_output_segmented2d = m_output_segmented2d.at(plane);
         segmentation2d << worker;
     }
