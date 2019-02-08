@@ -11,6 +11,7 @@
 #include <cv-toolbox/label_properties.h>
 #include <cv-toolbox/recoloring_map.h>
 #include <cv-toolbox/toolbox/toolbox_recoloring.h>
+#include <cv-toolbox/toolbox/toolbox_statistics.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
@@ -112,6 +113,8 @@ void segmentation3d_klingberg::work() {
         // Process the components
         cv::label_properties<cc_properties> prop(layer_last);
         for(const auto &kv : prop.rows) {
+            if(kv.first == 0)
+                continue;
             auto nd = layer_graph.addNode();
             node_weight o;
             o.layer = 0;
@@ -218,6 +221,10 @@ void segmentation3d_klingberg::work() {
         auto output_plane = m_output_segmented3d.at(layer_index);
         auto rw = output_plane.access_readwrite();
         cv::toolbox::recolor(rw.get(), recoloring);
+
+        // Debug stuff
+        cv::toolbox::min_max_result mmloc = cv::toolbox::statistics::min_max_loc(rw.get());
+        std::cout << "Min is " << mmloc.min.value << ", max is " << mmloc.max.value;
     }
 }
 
