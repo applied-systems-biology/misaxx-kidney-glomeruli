@@ -222,9 +222,9 @@ void segmentation3d_klingberg::work() {
         auto rw = output_plane.access_readwrite();
         cv::toolbox::recolor(rw.get(), recoloring);
 
-        // Debug stuff
-        cv::toolbox::min_max_result mmloc = cv::toolbox::statistics::min_max_loc(rw.get());
-        std::cout << "Min is " << mmloc.min.value << ", max is " << mmloc.max.value;
+//        // Debug stuff
+//        cv::toolbox::min_max_result mmloc = cv::toolbox::statistics::min_max_loc(rw.get());
+//        std::cout << "Min is " << mmloc.min.value << ", max is " << mmloc.max.value;
     }
 }
 
