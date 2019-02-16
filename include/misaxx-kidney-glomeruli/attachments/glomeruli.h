@@ -6,7 +6,6 @@
 #pragma once
 
 #include <misaxx/core/attachments/misa_locatable.h>
-#include <misaxx/core/attachments/misa_labeled_object_location.h>
 #include <misaxx-kidney-glomeruli/attachments/glomerulus.h>
 
 namespace misaxx_kidney_glomeruli {
