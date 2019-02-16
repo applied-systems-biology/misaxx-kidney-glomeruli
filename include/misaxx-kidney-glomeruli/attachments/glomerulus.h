@@ -9,7 +9,6 @@
 #include <misaxx/ome/attachments/misa_ome_pixel_count.h>
 #include <misaxx/ome/attachments/misa_ome_quantity.h>
 #include <misaxx/core/attachments/misa_locatable.h>
-#include <misaxx/core/attachments/misa_labeled_object_location.h>
 
 namespace misaxx_kidney_glomeruli {
 
