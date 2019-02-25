@@ -39,5 +39,5 @@ void glomerulus::to_json_schema(const misaxx::misa_json_schema &t_schema) const 
 
 void glomerulus::build_serialization_id_hierarchy(std::vector<misaxx::misa_serialization_id> &result) const {
     misa_locatable::build_serialization_id_hierarchy(result);
-    result.emplace_back(misaxx::misa_serialization_id("misa_kidney_glomeruli", "attachments/glomerulus"));
+    result.emplace_back(misaxx::misa_serialization_id("misa-kidney-glomeruli", "attachments/glomerulus"));
 }
