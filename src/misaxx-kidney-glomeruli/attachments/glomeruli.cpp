@@ -22,7 +22,7 @@ void glomeruli::to_json(nlohmann::json &t_json) const {
 
 void glomeruli::to_json_schema(const misaxx::misa_json_schema &t_schema) const {
     misaxx::misa_locatable::to_json_schema(t_schema);
-    t_schema.resolve("data").declare_required<std::unordered_map<int, glomerulus>>();
+    t_schema.resolve("data").declare_required<std::unordered_map<std::string, glomerulus>>();
 }
 
 void glomeruli::build_serialization_id_hierarchy(std::vector<misaxx::misa_serialization_id> &result) const {
