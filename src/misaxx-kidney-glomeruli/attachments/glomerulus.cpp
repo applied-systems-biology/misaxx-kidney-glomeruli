@@ -27,14 +27,14 @@ void glomerulus::to_json(nlohmann::json &j) const {
     j["valid"] = valid;
 }
 
-void glomerulus::to_json_schema(const misaxx::misa_json_schema &t_schema) const {
+void glomerulus::to_json_schema(misaxx::misa_json_schema_property &t_schema) const {
     misa_locatable::to_json_schema(t_schema);
-    pixels.to_json_schema(t_schema.resolve("pixels"));
-    volume.to_json_schema(t_schema.resolve("volume"));
-    diameter.to_json_schema(t_schema.resolve("diameter"));
-    bounds.to_json_schema(t_schema.resolve("bounds"));
-    t_schema.resolve("label").declare_required<int>();
-    t_schema.resolve("valid").declare_required<bool>();
+    pixels.to_json_schema(t_schema["pixels"]);
+    volume.to_json_schema(t_schema["volume"]);
+    diameter.to_json_schema(t_schema["diameter"]);
+    bounds.to_json_schema(t_schema["bounds"]);
+    t_schema.resolve("label")->declare_required<int>();
+    t_schema.resolve("valid")->declare_required<bool>();
 }
 
 void glomerulus::build_serialization_id_hierarchy(std::vector<misaxx::misa_serialization_id> &result) const {
