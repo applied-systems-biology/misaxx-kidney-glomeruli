@@ -46,6 +46,10 @@ namespace misaxx_kidney_glomeruli {
 
         void to_json_schema(misaxx::misa_json_schema_property &t_schema) const override;
 
+        std::string get_documentation_name() const override;
+
+        std::string get_documentation_description() const override;
+
     protected:
 
         void build_serialization_id_hierarchy(std::vector<misaxx::misa_serialization_id> &result) const override;
