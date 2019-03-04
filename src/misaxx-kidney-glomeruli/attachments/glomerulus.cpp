@@ -41,3 +41,11 @@ void glomerulus::build_serialization_id_hierarchy(std::vector<misaxx::misa_seria
     misa_locatable::build_serialization_id_hierarchy(result);
     result.emplace_back(misaxx::misa_serialization_id("misa-kidney-glomeruli", "attachments/glomerulus"));
 }
+
+std::string glomerulus::get_documentation_name() const {
+    return "Glomerulus";
+}
+
+std::string glomerulus::get_documentation_description() const {
+    return "Glomerulus detected by the segmentation algorithm";
+}
