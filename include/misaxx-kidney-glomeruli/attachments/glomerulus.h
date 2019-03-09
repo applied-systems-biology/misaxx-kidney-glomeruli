@@ -9,6 +9,7 @@
 #include <misaxx/ome/attachments/misa_ome_pixel_count.h>
 #include <misaxx/ome/attachments/misa_ome_quantity.h>
 #include <misaxx/core/attachments/misa_locatable.h>
+#include <misaxx/ome/utils/units_length.h>
 
 namespace misaxx_kidney_glomeruli {
 
@@ -38,7 +39,7 @@ namespace misaxx_kidney_glomeruli {
          */
         bool valid = false;
 
-        glomerulus() = default;
+        glomerulus();
 
         void from_json(const nlohmann::json &j) override;
 

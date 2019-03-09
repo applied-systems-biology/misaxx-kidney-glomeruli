@@ -7,6 +7,12 @@
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
 
+glomerulus::glomerulus() : volume(misaxx::ome::misa_ome_volume<double> { misaxx::ome::units::micrometer<3>() }),
+                           diameter(misaxx::ome::misa_ome_length<double> { misaxx::ome::units::micrometer<1>() }),
+                           bounds(misaxx::ome::misa_ome_voxel { misaxx::ome::units::micrometer<1>() }) {
+}
+
+
 void glomerulus::from_json(const nlohmann::json &j) {
     misa_locatable::from_json(j);
     pixels.from_json(j["pixels"]);
@@ -49,3 +55,4 @@ std::string glomerulus::get_documentation_name() const {
 std::string glomerulus::get_documentation_description() const {
     return "Glomerulus detected by the segmentation algorithm";
 }
+
