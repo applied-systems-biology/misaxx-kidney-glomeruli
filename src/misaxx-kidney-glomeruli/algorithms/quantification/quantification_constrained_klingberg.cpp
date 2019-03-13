@@ -64,11 +64,6 @@ void quantification_constrained_klingberg::work() {
             bb.include_x(vs.get_size_x() * glom_properties.max_x);
             bb.include_y(vs.get_size_y() * glom_properties.min_y);
             bb.include_y(vs.get_size_y() * glom_properties.max_y);
-
-            std::cout << bb.get_from_x().get_value() << " - " << bb.get_to_x().get_value() << std::endl;
-            std::cout << bb.get_from_y().get_value() << " - " << bb.get_to_y().get_value() << std::endl;
-            std::cout << bb.get_from_z().get_value() << " - " << bb.get_to_z().get_value() << std::endl;
-            std::cout << "" << std::endl;
         }
     }
 
