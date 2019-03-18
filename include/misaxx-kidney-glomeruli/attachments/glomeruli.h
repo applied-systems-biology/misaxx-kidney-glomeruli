@@ -12,6 +12,10 @@ namespace misaxx_kidney_glomeruli {
 
     struct glomeruli : public misaxx::misa_locatable {
         std::unordered_map<int, glomerulus> data;
+        size_t valid_glomeruli_number = 0;
+        size_t invalid_glomeruli_number = 0;
+        double valid_glomeruli_diameter_average = 0;
+        double valid_glomeruli_diameter_variance = 0;
 
         void from_json(const nlohmann::json &t_json) override;
 

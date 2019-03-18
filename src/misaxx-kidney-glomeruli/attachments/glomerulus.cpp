@@ -35,12 +35,24 @@ void glomerulus::to_json(nlohmann::json &j) const {
 
 void glomerulus::to_json_schema(misaxx::misa_json_schema_property &t_schema) const {
     misa_locatable::to_json_schema(t_schema);
-    pixels.to_json_schema(t_schema["pixels"]);
-    volume.to_json_schema(t_schema["volume"]);
-    diameter.to_json_schema(t_schema["diameter"]);
-    bounds.to_json_schema(t_schema["bounds"]);
-    t_schema.resolve("label")->declare_required<int>();
-    t_schema.resolve("valid")->declare_required<bool>();
+    t_schema.resolve("pixels")->declare_required<misaxx::ome::misa_ome_pixel_count>()
+            .document_title("Pixels")
+            .document_description("The number of detected pixels of this glomerulus");
+    t_schema.resolve("volume")->declare_required<misaxx::ome::misa_ome_volume<double>>()
+            .document_title("Volume")
+            .document_description("The volume of this glomerulus");
+    t_schema.resolve("diameter")->declare_required<misaxx::ome::misa_ome_length<double>>()
+            .document_title("diameter")
+            .document_description("The diameter of this glomerulus");
+    t_schema.resolve("bounds")->declare_required<misaxx::ome::misa_ome_voxel>()
+            .document_title("bounds")
+            .document_description("The bounds of this glomerulus (if available)");
+    t_schema.resolve("label")->declare_required<int>()
+            .document_title("Label")
+            .document_description("The label of this glomerulus within the 3D segmented image stack");
+    t_schema.resolve("valid")->declare_required<bool>()
+            .document_title("Valid")
+            .document_description("True if this glomerulus is valid");
 }
 
 void glomerulus::build_serialization_id_hierarchy(std::vector<misaxx::misa_serialization_id> &result) const {

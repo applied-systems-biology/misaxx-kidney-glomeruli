@@ -53,6 +53,9 @@ void quantification_klingberg::work() {
     double glomerulus_min_volume = 4.0 / 3.0 * M_PI * std::pow(m_glomeruli_min_rad.query(), 3);
     double glomerulus_max_volume = 4.0 / 3.0 * M_PI * std::pow(m_glomeruli_max_rad.query(), 3);
 
+    double diameter_sum = 0;
+    double diameter_sum_sq = 0;
+
     for(auto &kv : result.data) {
         glomerulus &glom = kv.second;
         glom.label = kv.first;
@@ -60,7 +63,19 @@ void quantification_klingberg::work() {
         glom.diameter = misa_quantity<double, misa_ome_unit_length<1>>(2 * pow(3.0 / 4.0 * glom.volume.get_value() / M_PI, 1.0 / 3.0),
                                                                        misa_ome_unit_length<1>::ome_unit_type::MICROMETER);
         glom.valid = glom.volume.get_value() >= glomerulus_min_volume && glom.volume.get_value() <= glomerulus_max_volume;
+        if(glom.valid) {
+            ++result.valid_glomeruli_number;
+            diameter_sum += glom.diameter.get_value();
+            diameter_sum_sq += std::pow(glom.diameter.get_value(), 2);
+        }
+        else {
+            ++result.invalid_glomeruli_number;
+        }
     }
+
+    result.valid_glomeruli_diameter_average = diameter_sum / result.valid_glomeruli_number;
+    result.valid_glomeruli_diameter_variance = (diameter_sum_sq / result.valid_glomeruli_number) -
+            std::pow(result.valid_glomeruli_diameter_average, 2);
 
     module->m_output_quantification.attach_foreign(std::move(result), module->m_output_segmented3d);
 }

@@ -73,6 +73,9 @@ void quantification_constrained_klingberg::work() {
     const double glomerulus_min_diameter = 2 * m_glomeruli_min_rad.query();
     const double glomerulus_max_diameter = 2 * m_glomeruli_max_rad.query();
 
+    double diameter_sum = 0;
+    double diameter_sum_sq = 0;
+
     for(auto &kv : result.data) {
 
         glomerulus &glom = kv.second; // TODO: Set location of glomerulus
@@ -98,7 +101,20 @@ void quantification_constrained_klingberg::work() {
         else {
             glom.valid = false;
         }
+
+        if(glom.valid) {
+            ++result.valid_glomeruli_number;
+            diameter_sum += glom.diameter.get_value();
+            diameter_sum_sq += std::pow(glom.diameter.get_value(), 2);
+        }
+        else {
+            ++result.invalid_glomeruli_number;
+        }
     }
+
+    result.valid_glomeruli_diameter_average = diameter_sum / result.valid_glomeruli_number;
+    result.valid_glomeruli_diameter_variance = (diameter_sum_sq / result.valid_glomeruli_number) -
+                                               std::pow(result.valid_glomeruli_diameter_average, 2);
 
     module->m_output_quantification.attach_foreign(std::move(result), module->m_output_segmented3d);
 }
