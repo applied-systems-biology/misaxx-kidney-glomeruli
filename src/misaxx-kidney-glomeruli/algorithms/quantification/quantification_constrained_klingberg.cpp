@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cv-toolbox/ReadableBMatTypes.h>
 #include <cv-toolbox/label_properties.h>
+#include <iostream>
 
 using namespace misaxx;
 using namespace misaxx::ome;
@@ -56,13 +57,13 @@ void quantification_constrained_klingberg::work() {
             const auto &vs = module->m_voxel_size;
 
             // Count z-layer bounding
-            bb.include_z(vs.get_size_z().make(layer_index));
+            bb.include_z(vs.get_size_z() * layer_index);
 
             // Count the bounding
-            bb.include_x(vs.get_size_x().make(glom_properties.min_x));
-            bb.include_x(vs.get_size_x().make(glom_properties.max_x));
-            bb.include_y(vs.get_size_y().make(glom_properties.min_y));
-            bb.include_y(vs.get_size_y().make(glom_properties.max_y));
+            bb.include_x(vs.get_size_x() * glom_properties.min_x);
+            bb.include_x(vs.get_size_x() * glom_properties.max_x);
+            bb.include_y(vs.get_size_y() * glom_properties.min_y);
+            bb.include_y(vs.get_size_y() * glom_properties.max_y);
         }
     }
 
