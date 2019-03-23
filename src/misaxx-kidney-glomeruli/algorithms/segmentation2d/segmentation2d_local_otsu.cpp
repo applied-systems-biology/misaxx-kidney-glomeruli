@@ -16,6 +16,7 @@
 #include <cv-toolbox/recoloring_map.h>
 #include <cv-toolbox/toolbox/toolbox_recoloring.h>
 #include <cv-toolbox/toolbox/toolbox_normalize.h>
+#include <cv-toolbox/toolbox/toolbox_visualization.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
@@ -46,7 +47,6 @@ namespace {
 
     cv::images::mask extract_maxima(const cv::images::grayscale32f &blobs, const cv::images::mask &tissue_mask,
                                                                   const double t_radius) {
-
         // Find the local maxima
         cv::images::mask blobs_mask = cv::toolbox::exclusive_local_maxima(blobs, static_cast<int>(2 * t_radius));
         cv::toolbox::set_where_not<uchar>(blobs_mask, tissue_mask, 0);
@@ -97,7 +97,7 @@ namespace {
 
         const int glomeruli_max_diameter = static_cast<int>((glomeruli_max_rad / voxel_xy) * 2);
 
-        cv::images::grayscale32f cortex_dist = cv::images::grayscale32f::allocate(blobs.size());
+        cv::images::grayscale32f cortex_dist { blobs.size(), 0.0f };
         cv::distanceTransform(tissue_mask, cortex_dist, cv::DIST_L2, 3);
 
         // Apply otsu
@@ -184,8 +184,8 @@ namespace {
         }
 
         // Blacklist phase
-        const int glomeruli_min_rad = static_cast<int>(glomeruli_min_rad_ / voxel_xy);
-        const int glomeruli_max_rad = static_cast<int>(glomeruli_max_rad_ / voxel_xy);
+        const auto glomeruli_min_rad = static_cast<int>(glomeruli_min_rad_ / voxel_xy);
+        const auto glomeruli_max_rad = static_cast<int>(glomeruli_max_rad_ / voxel_xy);
 
         for(size_t label = 1; label < label_contours.size(); ++label) {
             const auto contour = label_contours[label];
@@ -206,14 +206,14 @@ namespace {
                    std::floor(max_rad) > glomeruli_max_rad ||
                    std::floor(max_rad) < glomeruli_min_rad) {
                     blacklist.set_recolor(label, 0);
-//                        std::cout << "Blacklist " << label << " failed radius requirements" << std::endl;
+//                        // std::cout << "Blacklist " << label << " failed radius requirements" << std::endl;
                     continue;
                 }
 
                 // Eccentricity check
                 if(max_rad / min_rad >= 2) {
                     blacklist.set_recolor(label, 0);
-//                        std::cout << "Blacklist " << label << " failed eccentricity requirements" << std::endl;
+//                        // std::cout << "Blacklist " << label << " failed eccentricity requirements" << std::endl;
                     continue;
                 }
 
@@ -223,17 +223,17 @@ namespace {
                 const double fitted_ellipse_perimeter = 2 * M_PI * sqrt((pow(fitted_ellipse_r1, 2) + pow(fitted_ellipse_r2, 2)) / 2.0);
                 const double fitted_isoperimetric_quotient = (4 * M_PI * fitted_ellipse_area) / pow(fitted_ellipse_perimeter, 2);
 
-//                    std::cout << "Q = " << isoperimetric_quotient << ", expected Q = " << fitted_isoperimetric_quotient << std::endl;
+//                    // std::cout << "Q = " << isoperimetric_quotient << ", expected Q = " << fitted_isoperimetric_quotient << std::endl;
 
                 if(isoperimetric_quotient < isoperimetric_quotient_threshold * fitted_isoperimetric_quotient || isoperimetric_quotient > 1) {
                     blacklist.set_recolor(label, 0);
-//                        std::cout << "Blacklist " << label << " failed isoperimetric quotient requirements" << std::endl;
+//                        // std::cout << "Blacklist " << label << " failed isoperimetric quotient requirements" << std::endl;
                     continue;
                 }
 
             }
             else {
-//                    std::cout << "Blacklist " << label << " has no contour" << std::endl;
+//                    // std::cout << "Blacklist " << label << " has no contour" << std::endl;
                 blacklist.set_recolor(label, 0);
             }
         }
@@ -287,13 +287,13 @@ namespace {
 
         // Blacklist phase: Get rid of everything we don't want
         // First calculate the 8-connected components (8 because this will help removing touching pixels)
-        int local_otsu_mask_max_component_id = 0;
         cv::images::grayscale32s local_otsu_mask_components;
-        cv::connectedComponents(local_otsu_mask, local_otsu_mask_components, 8, CV_32S);
+        int local_otsu_mask_max_component_id = cv::connectedComponents(local_otsu_mask, local_otsu_mask_components, 8, CV_32S);
 
         cv::identity_recoloring_hashmap<int> blacklist;
 
         // Blacklist the components that border to the max circle and components that are too small
+        // std::cout << "Segment glomeruli blacklist by contour" << std::endl;
         segment_glomeruli_local_otsu_blacklist_by_contour(img,
                                                           blobs_maxima,
                                                           local_otsu_mask,
@@ -304,6 +304,7 @@ namespace {
                                                           glomeruli_max_rad_,
                                                           isoperimetric_quotient_threshold);
 
+        // std::cout << "Appyling blacklist" << std::endl;
         cv::toolbox::recolor(local_otsu_mask_components, blacklist);
 
 
@@ -341,10 +342,12 @@ void segmentation2d_local_otsu::work() {
     cv::toolbox::normalize::by_max(img);
 
     // Extracts the blobs
+    // std::cout << "Extracting blobs" << std::endl;
     cv::images::grayscale32f blobs = extract_blobs_log(img,
             m_glomeruli_min_rad.query(),
             m_glomeruli_max_rad.query(),
             voxel_xy);
+    // std::cout << "Extracting cortex" << std::endl;
     cv::images::mask cortex_mask = find_cortex_otsu_distance_and_dilation(tissue_mask,
             blobs,
             voxel_xy,
@@ -358,6 +361,7 @@ void segmentation2d_local_otsu::work() {
 
     // Local maxima selection is expensive (Due to dilation).
     // Instead use a two-step approach that only requires the dilation with the small selection
+    // std::cout << "Extracting maxima" << std::endl;
     cv::images::mask blobs_all_maxima = extract_maxima(blobs.clone(), tissue_mask, m_glomeruli_min_rad.query() / voxel_xy);
     cv::toolbox::set_where_not<uchar>(blobs_all_maxima, cortex_mask, 0);
 
@@ -367,12 +371,14 @@ void segmentation2d_local_otsu::work() {
 
         cv::images::mask blobs_maxima = blobs_all_maxima.clone();
         if(radius_microns != m_glomeruli_min_rad.query()) {
+            // std::cout << "Restricting maxima " << radius_microns << std::endl;
             restrict_maxima(blobs_maxima, img, radius);
         }
 
         cv::images::grayscale32s blobs_maxima_components;
         cv::connectedComponents(blobs_maxima, blobs_maxima_components, 8, CV_32S);
 
+        // std::cout << "Segmenting glomerul " << radius_microns << std::endl;
         cv::images::mask final_mask = segment_glomeruli_local_otsu(blobs_maxima,
                 cortex_mask,
                 img,
