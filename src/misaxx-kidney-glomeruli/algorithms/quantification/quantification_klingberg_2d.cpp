@@ -65,7 +65,7 @@ void quantification_klingberg_2d::work() {
         glomerulus &glom = kv.second;
         glom.label = kv.first;
         glom.volume = glom.pixels.get_volume(module->m_voxel_size); // Equal to area here
-        glom.diameter = misa_quantity<double, misa_ome_unit_length<1>>(2 * pow(3.0 / 4.0 * glom.volume.get_value() / M_PI, 1.0 / 3.0),
+        glom.diameter = misa_quantity<double, misa_ome_unit_length<1>>(2 * pow(glom.volume.get_value() / M_PI, 1.0 / 2.0),
                                                                        misa_ome_unit_length<1>::ome_unit_type::MICROMETER);
         glom.valid = glom.volume.get_value() >= glomerulus_min_area && glom.volume.get_value() <= glomerulus_max_area;
         if(glom.valid) {
