@@ -43,9 +43,8 @@ void quantification_klingberg::work() {
             if(group == 0)
                 continue;
 
-            glomerulus glom; // TODO: Set location of glomerulus
+            glomerulus &glom = result.data[group];
             glom.pixels.count += glom_properties.pixels;
-            result.data[group] = std::move(glom);
         }
     }
 
