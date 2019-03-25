@@ -5,9 +5,9 @@
 
 misaxx::misa_module_info misaxx_kidney_glomeruli::module_info() {
     misaxx::misa_mutable_module_info info;
-    info.set_id("@PROJECT_NAME@");
-    info.set_version("@PROJECT_VERSION@");
-    info.set_name("@PROJECT_DESCRIPTION@");
+    info.set_id("misaxx-kidney-glomeruli");
+    info.set_version("0.1.0");
+    info.set_name("MISA++ Kidney Glomeruli Segmentation");
     info.set_description("Segments glomeruli within kidney LSFM images");
     info.add_author("Ruman Gerst");
     info.set_license("BSD-2-Clause");
