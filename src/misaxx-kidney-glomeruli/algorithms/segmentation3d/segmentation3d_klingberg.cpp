@@ -123,7 +123,7 @@ void segmentation3d_klingberg::work() {
             layer_nodes[0][kv.first] = nd;
         }
 
-        std::cout << "Found " << (img_labels_max_component - 1) << " glomeruli in first layer" << "\n";
+        std::cout << "Found " << img_labels_max_component << " glomeruli in first layer" << "\n";
     }
 
     // For all other layers also look at the overlap
@@ -138,7 +138,7 @@ void segmentation3d_klingberg::work() {
         int img_labels_max_component = cv::connectedComponents(input_plane.access_readonly().get(), img_labels, 8, CV_32S);
         output_plane.write(img_labels.clone());
 
-        std::cout << "Found " << img_labels_max_component << " glomeruli in this layer" << "\n";
+        std::cout << "Found " << img_labels_max_component << " glomeruli in layer " << layer_index << "\n";
 
         // Find the edges
         std::unordered_set<int> new_nodes;
