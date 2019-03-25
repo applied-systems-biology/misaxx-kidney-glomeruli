@@ -26,7 +26,11 @@ add_library(misaxx-kidney-glomeruli-segmentation
         src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.cpp
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.cpp
         src/misaxx-kidney-glomeruli/attachments/glomeruli.cpp
-        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.cpp src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.cpp src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.h)
+        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.cpp
+        src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.cpp
+        src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.h
+        include/misaxx-kidney-glomeruli/module_info.h
+        src/misaxx-kidney-glomeruli/module_info.cpp)
 
 target_link_libraries(misaxx-kidney-glomeruli-segmentation PUBLIC misaxx::misaxx-tissue-segmentation)
 target_link_libraries(misaxx-kidney-glomeruli-segmentation PUBLIC ${LEMON_LIBRARY})
