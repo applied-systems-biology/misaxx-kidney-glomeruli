@@ -4,7 +4,7 @@
 #include <misaxx-tissue/module_info.h>
 
 misaxx::misa_module_info misaxx_kidney_glomeruli::module_info() {
-    misaxx::misa_mutable_module_info info;
+    misaxx::misa_module_info info;
     info.set_id("misaxx-kidney-glomeruli");
     info.set_version("1.0.0");
     info.set_name("MISA++ Kidney Glomeruli Segmentation");
