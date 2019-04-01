@@ -46,7 +46,7 @@ void segmentation2d_klingberg::work() {
     // Morphological operation (opening)
     // Corresponds to only allowing objects > disk_size to be included
     // Also subtract the morph result from the initial to remove uneven background + normalize
-    cv::toolbox::morph::tophat(img, cv::structuring_element::ellipse(glomeruli_max_morph_disk_radius * 2));
+    cv::toolbox::morph::tophat(img, cv::structuring_element::ellipse(glomeruli_max_morph_disk_radius * 2 + 1));
     cv::toolbox::normalize::by_max(img);
 
     // We are first extracting tissue data
@@ -71,7 +71,7 @@ void segmentation2d_klingberg::work() {
         cv::toolbox::set_where<uchar>(img_as8u, img_non_tissue_mask, 0);
 
         // Morphological operation (object should have min. radius)
-        cv::toolbox::morph::open(img_as8u, cv::structuring_element::ellipse(glomeruli_min_morph_disk_radius * 2));
+        cv::toolbox::morph::open(img_as8u, cv::structuring_element::ellipse(glomeruli_min_morph_disk_radius * 2 + 1));
     }
     else {
         img_as8u.self() = 0;
