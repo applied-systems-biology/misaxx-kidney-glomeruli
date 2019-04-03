@@ -11,16 +11,8 @@
  */
 
 #pragma once
-
-#include <misaxx/core/misa_task.h>
-#include <misaxx-kidney-glomeruli/module_interface.h>
-#include <misaxx/ome/accessors/misa_ome_tiff.h>
+#include <misaxx/core/module_info.h>
 
 namespace misaxx_kidney_glomeruli {
-    struct quantification_base : public misaxx::misa_task {
-
-        misaxx::ome::misa_ome_tiff m_input_segmented3d;
-
-        using misaxx::misa_task::misa_task;
-    };
+    extern misaxx::misa_module_info module_info();
 }

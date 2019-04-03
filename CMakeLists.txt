@@ -1,3 +1,15 @@
+# /**
+# * Copyright by Ruman Gerst
+# * Research Group Applied Systems Biology - Head: Prof. Dr. Marc Thilo Figge
+# * https://www.leibniz-hki.de/en/applied-systems-biology.html
+# * HKI-Center for Systems Biology of Infection
+# * Leibniz Institute for Natural Product Research and Infection Biology - Hans Knöll Insitute (HKI)
+# * Adolf-Reichwein-Straße 23, 07745 Jena, Germany
+# *
+# * This code is licensed under BSD 2-Clause
+# * See the LICENSE file provided with this code for the full license.
+# */
+
 cmake_minimum_required(VERSION 3.11)
 project(misaxx-kidney-glomeruli VERSION 0.1.0 DESCRIPTION "MISA++ Kidney Glomeruli Segmentation")
 
@@ -26,7 +38,11 @@ add_library(misaxx-kidney-glomeruli-segmentation
         src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.cpp
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.cpp
         src/misaxx-kidney-glomeruli/attachments/glomeruli.cpp
-        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.cpp src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.cpp src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.h)
+        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.cpp
+        src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.cpp
+        src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.h
+        include/misaxx-kidney-glomeruli/module_info.h
+        src/misaxx-kidney-glomeruli/module_info.cpp)
 
 target_link_libraries(misaxx-kidney-glomeruli-segmentation PUBLIC misaxx::misaxx-tissue-segmentation)
 target_link_libraries(misaxx-kidney-glomeruli-segmentation PUBLIC ${LEMON_LIBRARY})

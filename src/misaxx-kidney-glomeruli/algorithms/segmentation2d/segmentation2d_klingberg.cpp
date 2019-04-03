@@ -1,6 +1,14 @@
-//
-// Created by rgerst on 17.12.18.
-//
+/**
+ * Copyright by Ruman Gerst
+ * Research Group Applied Systems Biology - Head: Prof. Dr. Marc Thilo Figge
+ * https://www.leibniz-hki.de/en/applied-systems-biology.html
+ * HKI-Center for Systems Biology of Infection
+ * Leibniz Institute for Natural Product Research and Infection Biology - Hans Knöll Insitute (HKI)
+ * Adolf-Reichwein-Straße 23, 07745 Jena, Germany
+ *
+ * This code is licensed under BSD 2-Clause
+ * See the LICENSE file provided with this code for the full license.
+ */
 
 #include "segmentation2d_klingberg.h"
 #include <cv-toolbox/ReadableBMatTypes.h>
@@ -46,7 +54,7 @@ void segmentation2d_klingberg::work() {
     // Morphological operation (opening)
     // Corresponds to only allowing objects > disk_size to be included
     // Also subtract the morph result from the initial to remove uneven background + normalize
-    cv::toolbox::morph::tophat(img, cv::structuring_element::ellipse(glomeruli_max_morph_disk_radius * 2));
+    cv::toolbox::morph::tophat(img, cv::structuring_element::ellipse(glomeruli_max_morph_disk_radius * 2 + 1));
     cv::toolbox::normalize::by_max(img);
 
     // We are first extracting tissue data
@@ -71,7 +79,7 @@ void segmentation2d_klingberg::work() {
         cv::toolbox::set_where<uchar>(img_as8u, img_non_tissue_mask, 0);
 
         // Morphological operation (object should have min. radius)
-        cv::toolbox::morph::open(img_as8u, cv::structuring_element::ellipse(glomeruli_min_morph_disk_radius * 2));
+        cv::toolbox::morph::open(img_as8u, cv::structuring_element::ellipse(glomeruli_min_morph_disk_radius * 2 + 1));
     }
     else {
         img_as8u.self() = 0;
