@@ -24,18 +24,14 @@ add_library(misaxx-kidney-glomeruli-segmentation
         src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.h
         src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h
         src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_base.h
-        src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.h
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_base.h
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.h
         include/misaxx-kidney-glomeruli/attachments/glomerulus.h
         include/misaxx-kidney-glomeruli/attachments/glomeruli.h
-        src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_constrained_klingberg.h
         src/misaxx-kidney-glomeruli/module_interface.cpp
         src/misaxx-kidney-glomeruli/module.cpp
-        src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_constrained_klingberg.cpp
         src/misaxx-kidney-glomeruli/attachments/glomerulus.cpp
         src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.cpp
-        src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_local_otsu.cpp
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.cpp
         src/misaxx-kidney-glomeruli/attachments/glomeruli.cpp
         src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.cpp

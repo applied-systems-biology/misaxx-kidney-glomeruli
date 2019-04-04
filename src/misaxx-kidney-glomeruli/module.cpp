@@ -15,10 +15,8 @@
 #include <misaxx-tissue/module.h>
 #include <src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.h>
 #include "algorithms/segmentation2d/segmentation2d_klingberg.h"
-#include "algorithms/segmentation2d/segmentation2d_local_otsu.h"
 #include "algorithms/segmentation3d/segmentation3d_klingberg.h"
 #include "algorithms/quantification/quantification_klingberg.h"
-#include "algorithms/quantification/quantification_constrained_klingberg.h"
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
@@ -32,16 +30,14 @@ void module::create_blueprints(misa_dispatcher::blueprint_list &t_blueprints,
 
     t_blueprints.add(create_submodule_blueprint<misaxx_tissue::module>("tissue", get_module_as<module_interface>()->m_tissue));
     t_blueprints.add(create_blueprint_enum_parameter(m_segmentation2d_algorithm, {
-        create_blueprint<segmentation2d_klingberg>("segmentation2d_klingberg"),
-        create_blueprint<segmentation2d_local_otsu>("segmentation2d_local_otsu")
+        create_blueprint<segmentation2d_klingberg>("segmentation2d_klingberg")
     }, "segmentation2d_klingberg"));
     t_blueprints.add(create_blueprint_enum_parameter(m_segmentation3d_algorithm, {
             create_blueprint<segmentation3d_klingberg>("segmentation3d_klingberg")
     }, "segmentation3d_klingberg"));
     t_blueprints.add(create_blueprint_enum_parameter(m_quantification_algorithm, {
             create_blueprint<quantification_klingberg>("quantification_klingberg"),
-            create_blueprint<quantification_klingberg_2d>("quantification_klingberg_2d"),
-            create_blueprint<quantification_constrained_klingberg>("quantification_constrained_klingberg")
+            create_blueprint<quantification_klingberg_2d>("quantification_klingberg_2d")
     }, "quantification_klingberg"));
 
 }
