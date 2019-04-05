@@ -12,25 +12,31 @@
 
 #include "quantification_klingberg.h"
 #include <cmath>
-#include <cv-toolbox/ReadableBMatTypes.h>
-#include <cv-toolbox/label_properties.h>
 
 using namespace misaxx;
 using namespace misaxx::ome;
 using namespace misaxx_kidney_glomeruli;
-
 
 namespace {
 
     /**
      * Properties collected for labeling
      */
-    struct cc_properties {
+    struct glomerulus_properties {
         size_t pixels = 0;
+    };
 
-        void update(int x, int y, int label) {
-            ++pixels;
+    std::unordered_map<int, glomerulus_properties> get_glomeruli_properties(const cv::Mat &labels) {
+        std::unordered_map<int, glomerulus_properties> result;
+        for(int y = 0; y < labels.rows; ++y) {
+            const int *row = labels.ptr<int>(y);
+            for(int x = 0; x < labels.cols; ++x) {
+                if(row[x] > 0) {
+                    result[row[x]].pixels += 1;
+                }
+            }
         }
+        return result;
     };
 
 }
@@ -44,9 +50,7 @@ void quantification_klingberg::work() {
     for(const auto &plane : m_input_segmented3d) {
         auto access = plane.access_readonly();
 
-        cv::label_properties<cc_properties> component_properties(cv::images::labels { access.get() });
-
-        for(const auto& [group, glom_properties] : component_properties.rows) {
+        for(const auto& [group, glom_properties] : get_glomeruli_properties(access.get())) {
 
             if(group == 0)
                 continue;
