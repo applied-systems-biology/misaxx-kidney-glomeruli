@@ -19,9 +19,25 @@
 #include <cv-toolbox/toolbox/toolbox_statistics.h>
 #include <cv-toolbox/toolbox/toolbox_binarize.h>
 #include <cv-toolbox/structuring_element.h>
+#include <cv-toolbox/toolbox/toolbox_visualization.h>
 
 using namespace misaxx;
 using namespace misaxx_kidney_glomeruli;
+
+namespace {
+
+    cv::images::grayscale8u get_preprocessed_image(const misaxx::ome::misa_ome_plane &plane, int median_filter_size) {
+        cv::images::grayscale32f img = cv::toolbox::semantic_convert::to_grayscale32f(plane.clone());
+
+        // Initial median filtering + normalization
+        cv::medianBlur(img, img.buffer(), median_filter_size); img.swap();
+        cv::toolbox::normalize::by_max(img);
+
+        cv::images::grayscale8u img8u = cv::toolbox::semantic_convert::to_grayscale8u(img);
+        return img8u;
+    }
+
+}
 
 void segmentation2d_klingberg::work() {
 
@@ -39,12 +55,8 @@ void segmentation2d_klingberg::work() {
 
     cv::toolbox::invert(img_non_tissue_mask); // Now we mark all non-tissue
 
-    cv::images::grayscale32f img = cv::toolbox::semantic_convert::to_grayscale32f(m_input_autofluoresence.clone());
-    auto img_original = img.clone();
-
-    // Initial median filtering + normalization
-    cv::medianBlur(img, img.buffer(), m_median_filter_size.query()); img.swap();
-    cv::toolbox::normalize::by_max(img);
+    // Get the preprocessed image
+    cv::images::grayscale8u img8u = get_preprocessed_image(m_input_autofluoresence, m_median_filter_size.query());
 
     // Generated parameters
     const double voxel_xy = module->m_voxel_size.get_size_xy().get_value();
@@ -54,39 +66,41 @@ void segmentation2d_klingberg::work() {
     // Morphological operation (opening)
     // Corresponds to only allowing objects > disk_size to be included
     // Also subtract the morph result from the initial to remove uneven background + normalize
-    cv::toolbox::morph::tophat(img, cv::structuring_element::ellipse(glomeruli_max_morph_disk_radius * 2 + 1));
-    cv::toolbox::normalize::by_max(img);
+    cv::toolbox::morph::tophat(img8u, cv::structuring_element::ellipse(glomeruli_max_morph_disk_radius * 2 + 1));
+    cv::toolbox::normalize::by_max(img8u);
 
     // We are first extracting tissue data
-    auto img_tissue = img.clone();
+    cv::images::grayscale8u img_tissue = img8u.clone();
 
     // Get rid of non-tissue
-    cv::toolbox::set_where<float>(img_tissue, img_non_tissue_mask, 0);
+    cv::toolbox::set_where<uchar>(img_tissue, img_non_tissue_mask, 0);
 
     // Only select glomeruli if the threshold is higher than 75-percentile of kidney tissue
-    double percentile_tissue = cv::toolbox::statistics::get_percentile(img, m_threshold_percentile.query());
+    double percentile_tissue = cv::toolbox::statistics::get_percentile(img8u, m_threshold_percentile.query());
 
     //////////////
     // Now working in uint8
     //////////////
 
     // Threshold the main image
-    cv::images::grayscale8u img_as8u = cv::toolbox::semantic_convert::to_grayscale8u(img);
-    uchar otsu_threshold = cv::toolbox::otsu(img_as8u);
-    if((otsu_threshold / 255.0) > percentile_tissue * m_threshold_factor.query() ) {
+    uchar otsu_threshold = cv::toolbox::otsu(img8u);
+
+    std::cout << "Otsu: " << std::to_string(otsu_threshold) << " Percentile: " << std::to_string(percentile_tissue) << std::endl;
+
+    if(otsu_threshold > percentile_tissue * m_threshold_factor.query() ) {
 
         // Get rid of non-tissue
-        cv::toolbox::set_where<uchar>(img_as8u, img_non_tissue_mask, 0);
+        cv::toolbox::set_where<uchar>(img8u, img_non_tissue_mask, 0);
 
         // Morphological operation (object should have min. radius)
-        cv::toolbox::morph::open(img_as8u, cv::structuring_element::ellipse(glomeruli_min_morph_disk_radius * 2 + 1));
+        cv::toolbox::morph::open(img8u, cv::structuring_element::ellipse(glomeruli_min_morph_disk_radius * 2 + 1));
     }
     else {
-        img_as8u.self() = 0;
+        img8u.self() = 0;
     }
 
     // Save the mask
-    m_output_segmented2d.write(std::move(img_as8u));
+    m_output_segmented2d.write(std::move(img8u));
 }
 
 void segmentation2d_klingberg::create_parameters(misa_parameter_builder &t_parameters) {
