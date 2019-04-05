@@ -85,7 +85,7 @@ void segmentation2d_klingberg::work() {
     // Threshold the main image
     uchar otsu_threshold = cv::toolbox::otsu(img8u);
 
-    std::cout << "Otsu: " << std::to_string(otsu_threshold) << " Percentile: " << std::to_string(percentile_tissue) << std::endl;
+//    std::cout << "Otsu: " << std::to_string(otsu_threshold) << " Percentile: " << std::to_string(percentile_tissue) << std::endl;
 
     if(otsu_threshold > percentile_tissue * m_threshold_factor.query() ) {
 
