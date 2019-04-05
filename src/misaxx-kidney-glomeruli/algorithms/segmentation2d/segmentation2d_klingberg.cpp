@@ -109,6 +109,22 @@ namespace {
         return img8u;
     }
 
+    cv::images::mask create_disk(int radius) {
+        cv::images::mask result { cv::Size(radius * 2 + 1, radius * 2 + 1), 0 };
+
+        const int c = result.rows / 2;
+        for(int y = 0; y < result.rows; ++y) {
+            auto *row = result[y];
+            for(int x = 0; x < result.cols; ++x) {
+                if(std::pow(x - c, 2) + std::pow(y - c, 2) < radius * radius) {
+                    row[x] = 255;
+                }
+            }
+        }
+
+        return result;
+    }
+
 }
 
 void segmentation2d_klingberg::work() {
@@ -138,9 +154,11 @@ void segmentation2d_klingberg::work() {
     // Morphological operation (opening)
     // Corresponds to only allowing objects > disk_size to be included
     // Also subtract the morph result from the initial to remove uneven background + normalize
-    cv::morphologyEx(img8u.clone(), img8u, cv::MORPH_TOPHAT, cv::getStructuringElement(cv::MORPH_ELLIPSE,
-            cv::Size(glomeruli_max_morph_disk_radius * 2 + 1, glomeruli_max_morph_disk_radius * 2 + 1)));
-    normalize_by_max(img8u);
+    {
+        const cv::images::mask disk = create_disk(glomeruli_max_morph_disk_radius);
+        cv::morphologyEx(img8u.clone(), img8u, cv::MORPH_TOPHAT, disk);
+        normalize_by_max(img8u);
+    }
 
     // We are first extracting tissue data
     cv::images::grayscale8u img_tissue = img8u.clone();
@@ -166,8 +184,8 @@ void segmentation2d_klingberg::work() {
         img8u.setTo(0, img_non_tissue_mask);
 
         // Morphological operation (object should have min. radius)
-        cv::morphologyEx(img8u.clone(), img8u, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_ELLIPSE,
-                cv::Size(glomeruli_min_morph_disk_radius * 2 + 1, glomeruli_min_morph_disk_radius * 2 + 1)));
+        const cv::images::mask disk = create_disk(glomeruli_min_morph_disk_radius);
+        cv::morphologyEx(img8u.clone(), img8u, cv::MORPH_OPEN, disk);
     }
     else {
         img8u = 0;
