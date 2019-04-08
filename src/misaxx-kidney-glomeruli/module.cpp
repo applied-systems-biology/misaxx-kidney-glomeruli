@@ -14,7 +14,6 @@
 #include <misaxx-tissue/module_interface.h>
 #include <misaxx-tissue/module.h>
 #include <src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.h>
-#include <src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg_naive.h>
 #include "algorithms/segmentation2d/segmentation2d_klingberg.h"
 #include "algorithms/segmentation3d/segmentation3d_klingberg.h"
 #include "algorithms/quantification/quantification_klingberg.h"
@@ -34,9 +33,8 @@ void module::create_blueprints(misa_dispatcher::blueprint_list &t_blueprints,
         create_blueprint<segmentation2d_klingberg>("segmentation2d_klingberg")
     }, "segmentation2d_klingberg"));
     t_blueprints.add(create_blueprint_enum_parameter(m_segmentation3d_algorithm, {
-            create_blueprint<segmentation3d_klingberg>("segmentation3d_klingberg"),
-            create_blueprint<segmentation3d_klingberg_naive>("segmentation3d_klingberg_naive")
-    }, "segmentation3d_klingberg_naive"));
+            create_blueprint<segmentation3d_klingberg>("segmentation3d_klingberg")
+    }, "segmentation3d_klingberg"));
     t_blueprints.add(create_blueprint_enum_parameter(m_quantification_algorithm, {
             create_blueprint<quantification_klingberg>("quantification_klingberg"),
             create_blueprint<quantification_klingberg_2d>("quantification_klingberg_2d")

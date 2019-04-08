@@ -13,7 +13,6 @@
 cmake_minimum_required(VERSION 3.11)
 project(misaxx-kidney-glomeruli VERSION 0.1.0 DESCRIPTION "MISA++ Kidney Glomeruli Segmentation")
 
-find_package(LEMON REQUIRED)
 find_package(misaxx-tissue-segmentation REQUIRED)
 find_package(misaxx-imaging-ome REQUIRED)
 
@@ -22,7 +21,6 @@ add_library(misaxx-kidney-glomeruli-segmentation
         include/misaxx-kidney-glomeruli/module_interface.h
         src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_base.h
         src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.h
-        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h
         src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_base.h
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_base.h
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.h
@@ -34,14 +32,14 @@ add_library(misaxx-kidney-glomeruli-segmentation
         src/misaxx-kidney-glomeruli/algorithms/segmentation2d/segmentation2d_klingberg.cpp
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg.cpp
         src/misaxx-kidney-glomeruli/attachments/glomeruli.cpp
-        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.cpp
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.cpp
         src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.h
         include/misaxx-kidney-glomeruli/module_info.h
-        src/misaxx-kidney-glomeruli/module_info.cpp src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg_naive.cpp src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg_naive.h)
+        src/misaxx-kidney-glomeruli/module_info.cpp
+        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.cpp
+        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h)
 
 target_link_libraries(misaxx-kidney-glomeruli-segmentation PUBLIC misaxx::misaxx-tissue-segmentation)
-target_link_libraries(misaxx-kidney-glomeruli-segmentation PUBLIC ${LEMON_LIBRARY})
 
 set(MISAXX_LIBRARY misaxx-kidney-glomeruli-segmentation)
 set(MISAXX_LIBRARY_NAMESPACE misaxx::)
