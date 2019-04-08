@@ -37,12 +37,23 @@ namespace {
         return pixels;
     }
 
+    /**
+     * Gets percentiles (linear interpolation)
+     * @tparam T
+     * @param pixels
+     * @param percentiles
+     * @return
+     */
     template<typename T>
     std::vector<T> get_percentiles(const std::vector<T> &pixels, const std::vector<double> &percentiles) {
         std::vector<T> result;
         for(double percentile : percentiles) {
-            size_t rank = static_cast<size_t>(std::ceil(percentile / 100.0 * pixels.size()));
-            result.push_back(pixels.at(rank));
+            double rank = percentile / 100.0 * (pixels.size() - 1);
+            size_t lower_rank = static_cast<size_t>(std::floor(rank));
+            size_t higher_rank = static_cast<size_t>(std::ceil(rank));
+            double frac = rank - lower_rank; // fractional section
+            double p = pixels[lower_rank] + (pixels[higher_rank] - pixels[lower_rank]) * frac;
+            result.push_back(static_cast<T>(p));
         }
         return result;
     }
