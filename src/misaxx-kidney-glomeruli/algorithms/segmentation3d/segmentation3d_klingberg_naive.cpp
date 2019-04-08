@@ -14,7 +14,8 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg_naive::work() {
     auto module = get_module_as<module_interface>();
 
     std::vector<cv::images::labels> labels;
-    size_t loaded_labels_count = 0;
+    size_t loaded_label_count = 0;
+    size_t first_loaded_label_index = 0;
 
     const auto limsize = static_cast<size_t>(m_max_glomerulus_radius.query());
 
@@ -116,24 +117,20 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg_naive::work() {
         }
 
         labels.emplace_back(std::move(label));
-        ++loaded_labels_count;
+        ++loaded_label_count;
 
-        if(loaded_labels_count > limsize) {
-            for(size_t j = 0; j < labels.size(); ++j) {
-                if(!labels.at(j).empty()) {
-                    module->m_output_segmented3d.at(j).access_write().set(std::move(labels.at(j)));
-                    break;
-                }
-            }
-            --loaded_labels_count;
+        while(loaded_label_count > limsize) {
+            module->m_output_segmented3d.at(first_loaded_label_index).access_write().set(std::move(labels.at(first_loaded_label_index)));
+            --loaded_label_count;
+            ++first_loaded_label_index;
         }
     }
 
     // Move all other labels into the cache
-    for(size_t j = 0; j < labels.size(); ++j) {
-        if(!labels.at(j).empty()) {
-            module->m_output_segmented3d.at(j).access_write().set(std::move(labels.at(j)));
-        }
+    for(size_t j = first_loaded_label_index; j < labels.size(); ++j) {
+        if(labels.at(j).empty())
+            throw std::logic_error("Unexpected unloaded label!");
+        module->m_output_segmented3d.at(j).access_write().set(std::move(labels.at(j)));
     }
 }
 
