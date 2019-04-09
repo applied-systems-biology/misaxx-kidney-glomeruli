@@ -53,6 +53,14 @@ void module::build(const misa_dispatcher::blueprint_builder &t_builder) {
     group segmentation2d({{preprocessing}});
 
     for (size_t plane = 0; plane < m_input_autofluorescence.size(); ++plane) {
+
+        if(m_input_autofluorescence.at(plane).get_plane_location().z != plane)
+            throw std::logic_error("Plane location mismatch: Input data");
+        if(m_tissue->m_output_segmented.at(plane).get_plane_location().z != plane)
+            throw std::logic_error("Plane location mismatch: Tissue");
+        if(m_output_segmented2d.at(plane).get_plane_location().z != plane)
+            throw std::logic_error("Plane location mismatch: Glomeruli 2D");
+
         auto &worker = t_builder.build<segmentation2d_base>(m_segmentation2d_algorithm.query());
         worker.m_input_autofluoresence = m_input_autofluorescence.at(plane);
         worker.m_input_tissue = m_tissue->m_output_segmented.at(plane);
