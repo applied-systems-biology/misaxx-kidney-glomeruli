@@ -22,9 +22,9 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg::work() {
     int global_max_label = 0;
 
     for(size_t i = 0; i < module->m_output_segmented2d.size(); ++i) {
-        const auto mask_access = module->m_output_segmented2d.at(i).access_readonly();
         cv::images::labels label;
-        int max_label = cv::connectedComponents(mask_access.get(), label, 4, CV_32S);
+        int max_label = cv::connectedComponents( module->m_output_segmented2d.at(i).access_readonly().get(),
+                label, 4, CV_32S);
 
         std::cout << "Found " << max_label << " glomeruli in layer "<< std::to_string(i) << "\n";
 
