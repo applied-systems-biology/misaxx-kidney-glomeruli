@@ -68,7 +68,7 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg::work() {
                 }
 
                 // Go through last layers and rename
-                for(size_t j = 0; j < labels.size() - 1; ++j) {
+                for(size_t j = first_loaded_label_index; j < labels.size(); ++j) {
                     cv::images::labels &last_label = labels[j];
                     for(int y = 0; y < last_label.rows; ++y) {
                         int *row = last_label[y];
