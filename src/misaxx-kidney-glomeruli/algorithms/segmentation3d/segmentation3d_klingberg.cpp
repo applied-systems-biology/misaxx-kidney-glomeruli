@@ -105,8 +105,10 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg::work() {
                 do {
                     changed = false;
                     for(size_t j = 0; j < components.size(); ++j) {
+                        if(j >= components.size() - 1)
+                            continue;
                         for(size_t k = 0; k < components.size(); ++k) {
-                            if(j != k) {
+                            if(j != k && k < components.size()) {
                                 if(set_intersects(components.at(j), components.at(k))) {
                                     // Copy the labels from k to j
                                     std::copy(components.at(k).begin(), components.at(k).end(),
@@ -115,6 +117,7 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg::work() {
                                     // Remove k
                                     std::swap(components.at(k), components.at(components.size() - 1));
                                     components.resize(components.size() - 1);
+
 
                                     changed = true;
                                 }
