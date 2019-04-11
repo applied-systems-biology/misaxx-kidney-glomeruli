@@ -14,6 +14,7 @@
 #include <misaxx-tissue/module_interface.h>
 #include <misaxx-tissue/module.h>
 #include <src/misaxx-kidney-glomeruli/algorithms/quantification/quantification_klingberg_2d.h>
+#include <src/misaxx-kidney-glomeruli/algorithms/filtering/glomeruli_filtering.h>
 #include "algorithms/segmentation2d/segmentation2d_klingberg.h"
 #include "algorithms/segmentation3d/segmentation3d_klingberg.h"
 #include "algorithms/quantification/quantification_klingberg.h"
@@ -39,6 +40,7 @@ void module::create_blueprints(misa_dispatcher::blueprint_list &t_blueprints,
             create_blueprint<quantification_klingberg>("quantification_klingberg"),
             create_blueprint<quantification_klingberg_2d>("quantification_klingberg_2d")
     }, "quantification_klingberg"));
+    t_blueprints.add(create_blueprint<glomeruli_filtering>("glomeruli-filtering"));
 
 }
 
@@ -79,6 +81,10 @@ void module::build(const misa_dispatcher::blueprint_builder &t_builder) {
     {
         auto &worker = t_builder.build<quantification_base>(m_quantification_algorithm.query());
         worker.m_input_segmented3d = m_output_segmented3d;
+        work3d >> worker;
+    }
+    {
+        auto &worker = t_builder.build<glomeruli_filtering>("glomeruli-filtering");
         work3d >> worker;
     }
 }

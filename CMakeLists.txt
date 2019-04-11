@@ -37,7 +37,7 @@ add_library(misaxx-kidney-glomeruli-segmentation
         include/misaxx-kidney-glomeruli/module_info.h
         src/misaxx-kidney-glomeruli/module_info.cpp
         src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.cpp
-        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h)
+        src/misaxx-kidney-glomeruli/algorithms/segmentation3d/segmentation3d_klingberg.h src/misaxx-kidney-glomeruli/algorithms/filtering/glomeruli_filtering.cpp src/misaxx-kidney-glomeruli/algorithms/filtering/glomeruli_filtering.h)
 
 target_link_libraries(misaxx-kidney-glomeruli-segmentation PUBLIC misaxx::misaxx-tissue-segmentation)
 
