@@ -63,25 +63,55 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg::work() {
                 }
             }
 
-            // Go through the current layer and rename to target / create new groups
-            // The first pass ignores merging objects, but puts the current layer into the
-            std::unordered_map<int, int> first_pass_renaming;
-            {
-                for(auto &kv : connections) {
-                    if (kv.second.empty()) {
-                        ++global_max_label;
-                        first_pass_renaming[kv.first] = global_max_label;
-                    }
-                    else {
-                        first_pass_renaming[kv.first] = *kv.second.begin();
+
+            std::unordered_map<int, int> local_renaming;
+            std::unordered_map<int, int> global_renaming;
+
+            for(auto &kv : connections) {
+                if (kv.second.empty()) {
+                    ++global_max_label;
+                    local_renaming[kv.first] = global_max_label;
+                }
+                else if(kv.second.size() == 1) {
+                    local_renaming[kv.first] = *kv.second.begin();
+                }
+                else {
+                    int target = *kv.second.begin();
+                    local_renaming[kv.first] = target;
+
+                    for(auto &kv2 : connections) {
+                        if(kv2.second.find(target) != kv2.second.end()) {
+                            for(int src : kv2.second) {
+                                if(src != target) {
+                                    global_renaming[src] = target;
+                                }
+                            }
+                            kv2.second.clear();
+                            kv2.second.insert(target);
+                        }
                     }
                 }
+            }
 
+            for(int y = 0; y < label.rows; ++y) {
+                int *row = label[y];
+                for(int x = 0; x < label.cols; ++x) {
+                    if(row[x] > 0) {
+                        row[x] = local_renaming.at(row[x]);
+                    }
+                }
+            }
+
+            for(size_t j = first_loaded_label_index; j < labels.size(); ++j) {
+                cv::images::labels  &previous_label = labels.at(j);
                 for(int y = 0; y < label.rows; ++y) {
-                    int *row = label[y];
-                    for(int x = 0; x < label.cols; ++x) {
+                    int *row = previous_label[y];
+                    for(int x = 0; x < previous_label.cols; ++x) {
                         if(row[x] > 0) {
-                            row[x] = first_pass_renaming.at(row[x]);
+                            auto it = global_renaming.find(row[x]);
+                            if(it != global_renaming.end()) {
+                                row[x] = it->second;
+                            }
                         }
                     }
                 }
@@ -90,75 +120,6 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg::work() {
             // Move the first pass results into the current buffer
             labels.emplace_back(std::move(label));
             ++loaded_label_count;
-
-            // First-pass renaming does not merge objects
-            // We need a second renaming pass that merges all connected objects
-            {
-                // Find the connected components of connections
-                std::vector<std::unordered_set<int>> components;
-                for(const auto &kv : connections) {
-                    if(kv.second.size() > 1)
-                        components.push_back(kv.second);
-                }
-
-                bool changed;
-                do {
-                    changed = false;
-                    for(size_t j = 0; j < components.size(); ++j) {
-                        if(j >= components.size() - 1)
-                            continue;
-
-                        auto &target_component = components.at(j);
-
-                        for(size_t k = 0; k < components.size(); ++k) {
-                            if(j != k && k < components.size()) {
-                                auto &source_component = components.at(k);
-                                if(set_intersects(target_component, source_component)) {
-                                    // Copy the labels from k to j
-                                    for(int x : source_component) {
-                                        target_component.insert(x);
-                                    }
-
-                                    // Remove k
-                                    std::swap(target_component, components.at(components.size() - 1));
-                                    components.resize(components.size() - 1);
-
-                                    changed = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                while(changed);
-
-                // Create a second pass renaming
-                std::unordered_map<int, int> second_pass_renaming;
-                for(const auto &component : components) {
-                    int target = *component.begin();
-                    for(int src : component) {
-                        second_pass_renaming[src] = target;
-                    }
-                }
-
-                // Go through last layers and rename
-                // This includes the current layer
-                for(size_t j = first_loaded_label_index; j < labels.size(); ++j) {
-                    cv::images::labels &current_label = labels[j];
-
-                    for(int y = 0; y < current_label.rows; ++y) {
-                        int *row = current_label[y];
-                        for(int x = 0; x < current_label.cols; ++x) {
-                            if(row[x] > 0) {
-                                auto it = second_pass_renaming.find(row[x]);
-                                if(it != second_pass_renaming.end()) {
-                                    row[x] = it->second;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
         else {
             // Set global max label to current glomeruli count
