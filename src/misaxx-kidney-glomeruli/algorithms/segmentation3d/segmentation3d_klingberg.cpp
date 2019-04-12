@@ -136,7 +136,7 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg::work() {
 
             for(size_t j = first_loaded_label_index; j < labels.size(); ++j) {
                 cv::images::labels  &previous_label = labels.at(j);
-                for(int y = 0; y < label.rows; ++y) {
+                for(int y = 0; y < previous_label.rows; ++y) {
                     int *row = previous_label[y];
                     for(int x = 0; x < previous_label.cols; ++x) {
                         if(row[x] > 0) {
