@@ -84,6 +84,11 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg::work() {
                             for(int src : kv2.second) {
                                 if(src != target) {
                                     global_renaming[src] = target;
+                                    for(auto &kv3 : local_renaming) {
+                                        if(kv3.second == src) {
+                                            kv3.second = target;
+                                        }
+                                    }
                                 }
                             }
                             kv2.second.clear();
