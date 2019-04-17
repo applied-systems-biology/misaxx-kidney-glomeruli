@@ -79,49 +79,49 @@ void misaxx_kidney_glomeruli::segmentation3d_klingberg::work() {
                     int target = *kv.second.begin();
                     local_renaming[kv.first] = target;
 
-                    // Find all labels that are connected to target
-                    std::unordered_set<int> target_components;
-                    for(auto &kv2 : connections) {
-                        if(kv2.second.find(target) != kv2.second.end()) {
-                            for(int src : kv2.second) {
-                                if(src != target) {
-                                    target_components.insert(src);
-                                }
-                            }
-                        }
-                    }
-
-                    // Rename globally components -> target
-                    for(int src : target_components) {
-                        global_renaming[src] = target;
-                    }
-
-                    // Fix * -> component to: * -> target
-                    for(auto &kv2 : global_renaming) {
-                        if(target_components.find(kv2.second) != target_components.end()) {
-                            kv2.second = target;
-                        }
-                    }
-
-                    // Fix local renaming
-                    for(auto &kv2 : local_renaming) {
-                        if(target_components.find(kv2.second) != target_components.end()) {
-                            kv2.second = target;
-                        }
-                    }
-
-                    // Apply global renaming to all connections
-                    for(auto &kv2 : connections) {
-                        std::unordered_set<int> new_connections;
-                        for(int src : kv2.second) {
-                            auto it = global_renaming.find(src);
-                            if(it != global_renaming.end())
-                                new_connections.insert(it->second);
-                            else
-                                new_connections.insert(src);
-                        }
-                        kv2.second = std::move(new_connections);
-                    }
+//                    // Find all labels that are connected to target
+//                    std::unordered_set<int> target_components;
+//                    for(auto &kv2 : connections) {
+//                        if(kv2.second.find(target) != kv2.second.end()) {
+//                            for(int src : kv2.second) {
+//                                if(src != target) {
+//                                    target_components.insert(src);
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    // Rename globally components -> target
+//                    for(int src : target_components) {
+//                        global_renaming[src] = target;
+//                    }
+//
+//                    // Fix * -> component to: * -> target
+//                    for(auto &kv2 : global_renaming) {
+//                        if(target_components.find(kv2.second) != target_components.end()) {
+//                            kv2.second = target;
+//                        }
+//                    }
+//
+//                    // Fix local renaming
+//                    for(auto &kv2 : local_renaming) {
+//                        if(target_components.find(kv2.second) != target_components.end()) {
+//                            kv2.second = target;
+//                        }
+//                    }
+//
+//                    // Apply global renaming to all connections
+//                    for(auto &kv2 : connections) {
+//                        std::unordered_set<int> new_connections;
+//                        for(int src : kv2.second) {
+//                            auto it = global_renaming.find(src);
+//                            if(it != global_renaming.end())
+//                                new_connections.insert(it->second);
+//                            else
+//                                new_connections.insert(src);
+//                        }
+//                        kv2.second = std::move(new_connections);
+//                    }
                 }
             }
 

@@ -1,3 +1,17 @@
+**MISA++: A modular and high-performance framework for image analysis**
+
+Ruman Gerst (1,2), Anna Medyukhina (1), Marc Thilo Figge(1,2,\*)
+
+(1) Applied Systems Biology, Leibniz Institute for Natural Product Research and Infection Biology - Hans-Knöll-Institute, Jena, Germany
+
+(2) Faculty of Biological Sciences, Friedrich-Schiller-University Jena, Germany
+
+\* To whom correspondence should be addressed.
+
+https://applied-systems-biology.github.io/misa-framework/
+
+# About
+
 The MISA++ Kidney Glomeruli Segmentation segments glomeruli in whole kidneys.
 It implements the algorithm published by Klingberg *et. al.*:
 
@@ -35,3 +49,7 @@ You need a compiler capable of C++ version 2017 or higher to compile MISA++ Imag
 
 The project uses the [CMake](https://cmake.org/) build system and requires no
 additional build instructions that differ from the standard CMake building process.
+
+# Documentation
+
+Please visit https://applied-systems-biology.github.io/misa-framework/ for full build instructions and documentation.
