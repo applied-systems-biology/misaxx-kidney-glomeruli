@@ -140,19 +140,14 @@ namespace {
 
 void segmentation2d_klingberg::work() {
 
-    auto pam = is_parallelizeable_parameter;
-
+    auto tissue_access = m_input_tissue.access_readonly();
     auto module = get_module_as<module_interface>();
 
-    cv::images::mask img_non_tissue_mask { m_input_tissue.clone() };
-
-    if(cv::countNonZero(img_non_tissue_mask) == 0) { //INFO: Not inverted yet
+    if(cv::countNonZero(tissue_access.get()) == 0) {
         // Instead save a black image
-        m_output_segmented2d.write(cv::images::mask(img_non_tissue_mask.size(), 0));
+        m_output_segmented2d.write(cv::images::mask(tissue_access.get().size(), 0));
         return;
     }
-
-    img_non_tissue_mask = 255 - img_non_tissue_mask; // Now we mark all non-tissue
 
     // Get the preprocessed image
     cv::images::grayscale8u img8u = get_preprocessed_image(m_input_autofluoresence, m_median_filter_size.query());
@@ -171,14 +166,24 @@ void segmentation2d_klingberg::work() {
         normalize_by_max(img8u);
     }
 
-    // We are first extracting tissue data
-    cv::images::grayscale8u img_tissue = img8u.clone();
+    // Get the pixel values only where the tissue is located
+    std::vector<uchar> kidney_pixels;
+    {
+        for(int y = 0; y < tissue_access.get().rows; ++y) {
+            const uchar *row_tissue = tissue_access.get().ptr<uchar>(y);
+            const uchar *row = img8u[y];
+            for(int x = 0; x < tissue_access.get().cols; ++x) {
+               if(row_tissue[x] > 0) {
+                   kidney_pixels.push_back(row[x]);
+               }
+            }
+        }
+        std::sort(kidney_pixels.begin(), kidney_pixels.end());
+    }
 
-    // Get rid of non-tissue
-    img_tissue.setTo(0, img_non_tissue_mask);
 
     // Only select glomeruli if the threshold is higher than 75-percentile of kidney tissue
-    double percentile_tissue = get_percentiles(get_sorted_pixels(img8u), { m_threshold_percentile.query() })[0];
+    double img8u_tissue_only_percentile = get_percentiles(kidney_pixels, { m_threshold_percentile.query() })[0];
 
     //////////////
     // Now working in uint8
@@ -189,10 +194,10 @@ void segmentation2d_klingberg::work() {
 
 //    std::cout << "Otsu: " << std::to_string(otsu_threshold) << " Percentile: " << std::to_string(percentile_tissue) << std::endl;
 
-    if(otsu_threshold > percentile_tissue * m_threshold_factor.query() ) {
+    if(otsu_threshold > img8u_tissue_only_percentile * m_threshold_factor.query() ) {
 
         // Get rid of non-tissue
-        img8u.setTo(0, img_non_tissue_mask);
+        img8u.setTo(0, 255 - tissue_access.get());
 
         // Morphological operation (object should have min. radius)
         const cv::images::mask disk = create_disk(glomeruli_min_morph_disk_radius);
